@@ -13,6 +13,7 @@ alter type public.book_status add value if not exists 'blocked';
 alter table public.books
   add column if not exists subtitle text check (char_length(subtitle) <= 220),
   add column if not exists category text check (char_length(category) between 2 and 80),
+  add column if not exists categories text[] not null default '{}',
   add column if not exists language_code text not null default 'it' check (language_code in ('it','en')),
   add column if not exists file_name text,
   add column if not exists file_mime_type text,
@@ -41,3 +42,28 @@ create policy "authors delete unpublished books" on public.books for delete
 create policy "admins moderate books" on public.books for update
   using (public.is_admin()) with check (public.is_admin());
 create policy "admins delete books" on public.books for delete using (public.is_admin());
+
+create table if not exists public.admin_notifications (
+  id uuid primary key default gen_random_uuid(),
+  admin_id uuid not null references public.profiles(id) on delete cascade,
+  book_id uuid references public.books(id) on delete cascade,
+  message text not null,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.admin_notifications enable row level security;
+drop policy if exists "admins read notifications" on public.admin_notifications;
+create policy "admins read notifications" on public.admin_notifications for select using (admin_id=auth.uid() and public.is_admin());
+drop policy if exists "admins update notifications" on public.admin_notifications;
+create policy "admins update notifications" on public.admin_notifications for update using (admin_id=auth.uid() and public.is_admin()) with check (admin_id=auth.uid() and public.is_admin());
+create or replace function public.notify_admins_of_review() returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  if new.status='pending_review' and old.status is distinct from 'pending_review' then
+    insert into public.admin_notifications(admin_id,book_id,message)
+      select id,new.id,'Nuovo ebook inviato in revisione: ' || new.title from public.profiles where role='admin';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists books_notify_admins on public.books;
+create trigger books_notify_admins after update on public.books for each row execute procedure public.notify_admins_of_review();

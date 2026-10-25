@@ -1,25 +1,8 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {admin} from '@/lib/supabase/admin';
+import {coverUrl} from '@/lib/covers';
 
-async function moderate(form: FormData) {
-  'use server';
-  const s = await createClient();
-  const { data: auth } = await s.auth.getUser();
-  if (!auth.user) redirect('/');
-  const { data: profile } = await s.from('profiles').select('role').eq('id', auth.user.id).single();
-  if (profile?.role !== 'admin') redirect('/');
-  const status = String(form.get('status'));
-  await s.from('books').update({ status, published_at: status === 'published' ? new Date().toISOString() : null }).eq('id', String(form.get('id')));
-  redirect('/admin');
-}
-
-export default async function Admin() {
-  const s = await createClient();
-  const { data: auth } = await s.auth.getUser();
-  if (!auth.user) redirect('/');
-  const { data: profile } = await s.from('profiles').select('role').eq('id', auth.user.id).single();
-  if (profile?.role !== 'admin') redirect('/');
-  const { data: pendingBooks } = await s.from('books').select('id,title,status,profiles!books_author_id_fkey(display_name)').eq('status', 'pending_review');
-  const books = pendingBooks ?? [];
-  return <main className="wrap"><h1>Moderazione</h1>{books.map((b: any) => <form action={moderate} className="card" key={b.id}><strong>{b.title}</strong> · {b.profiles?.display_name}<input type="hidden" name="id" value={b.id}/><select name="status"><option value="published">Approva e pubblica</option><option value="rejected">Rifiuta</option></select><button>Conferma</button></form>)}</main>;
-}
+async function moderate(form:FormData){'use server';const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).single();if(profile?.role!=='admin')redirect('/');const id=String(form.get('id')),action=String(form.get('action')),note=String(form.get('note')).trim();if(action==='delete'){const db=admin(),{data:book}=await db.from('books').select('file_path,cover_path').eq('id',id).maybeSingle();if(book?.file_path)await db.storage.from('ebooks').remove([book.file_path]);if(book?.cover_path)await db.storage.from('covers').remove([book.cover_path]);await db.from('books').delete().eq('id',id)}else{const status=action==='publish'?'published':action==='block'?'blocked':'rejected';await s.from('books').update({status,published_at:status==='published'?new Date().toISOString():null,moderation_note:note||null}).eq('id',id)}redirect('/admin')}
+async function markNotificationsRead(){'use server';const s=await createClient(),{data:{user}}=await s.auth.getUser();if(user)await s.from('admin_notifications').update({read_at:new Date().toISOString()}).eq('admin_id',user.id).is('read_at',null);redirect('/admin')}
+export default async function Admin(){const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).single();if(profile?.role!=='admin')redirect('/');const [{data:reviewBooks},{data:notifications}]=await Promise.all([s.from('books').select('id,title,subtitle,description,category,cover_path,file_path,status,profiles!books_author_id_fkey(display_name)').in('status',['pending_review','published','rejected','blocked']).order('updated_at',{ascending:false}),s.from('admin_notifications').select('id,message,created_at').eq('admin_id',user.id).is('read_at',null).order('created_at',{ascending:false})]);const books=reviewBooks??[],notes=notifications??[];return <main className="wrap admin"><div className="section-head"><div><p className="eyebrow">Amministrazione</p><h1>Revisione editoriale</h1><p>Decidi cosa pubblicare, rifiutare, bloccare o eliminare.</p></div><div className="royalty-card"><span>Da revisionare</span><strong>{books.filter((b:any)=>b.status==='pending_review').length}</strong><small>{notes.length} nuove notifiche</small></div></div>{notes.length>0&&<section className="notice"><strong>Nuovi materiali ricevuti</strong>{notes.map((n:any)=><p key={n.id}>{n.message}</p>)}<form action={markNotificationsRead}><button className="button alt">Segna come lette</button></form></section>}<section className="titles">{books.map((b:any)=>{const image=coverUrl(b.cover_path);return <article className="book-item" key={b.id}>{image&&<img className="admin-cover" src={image} alt=""/>}<div><p className="status">{b.status}</p><h2>{b.title}</h2><p className="muted">di {b.profiles?.display_name||'Autore'} · {b.category||'Senza categoria'}</p><p>{b.description}</p>{b.file_path&&<p className="muted">File del libro ricevuto</p>}</div><form action={moderate}><input type="hidden" name="id" value={b.id}/><label>Nota per l’autore</label><textarea name="note" maxLength={1000} placeholder="Motivazione o indicazioni editoriali"/><div className="admin-actions"><button name="action" value="publish">Pubblica</button><button className="button alt" name="action" value="reject">Richiedi correzioni</button><button className="danger" name="action" value="block">Blocca</button><button className="danger" name="action" value="delete">Elimina</button></div></form></article>})}{!books.length&&<div className="empty"><h2>Nessun titolo da gestire</h2><p>Le nuove proposte appariranno qui quando un autore le invierà in revisione.</p></div>}</section></main>}
