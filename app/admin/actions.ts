@@ -1,0 +1,10 @@
+'use server';
+import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {admin} from '@/lib/supabase/admin';
+
+async function verifiedAdmin(){const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).maybeSingle();if(profile?.role!=='admin')redirect('/');return admin()}
+export async function publishBook(bookId:string){const db=await verifiedAdmin();const {error}=await db.from('books').update({status:'published',published_at:new Date().toISOString(),moderation_note:null}).eq('id',bookId);if(error)throw new Error('Pubblicazione non riuscita');redirect('/admin')}
+export async function rejectBook(bookId:string,form:FormData){const db=await verifiedAdmin();const note=String(form.get('note')??'').trim()||'Sono necessarie alcune correzioni prima della pubblicazione.';const {error}=await db.from('books').update({status:'rejected',published_at:null,moderation_note:note}).eq('id',bookId);if(error)throw new Error('Aggiornamento non riuscito');redirect('/admin')}
+export async function blockBook(bookId:string,form:FormData){const db=await verifiedAdmin();const note=String(form.get('note')??'').trim()||'Titolo bloccato dalla revisione editoriale.';const {error}=await db.from('books').update({status:'blocked',published_at:null,moderation_note:note}).eq('id',bookId);if(error)throw new Error('Blocco non riuscito');redirect('/admin')}
+export async function deleteBookAsAdmin(bookId:string){const db=await verifiedAdmin();const {data:book}=await db.from('books').select('file_path,cover_path').eq('id',bookId).maybeSingle();if(book?.file_path)await db.storage.from('ebooks').remove([book.file_path]);if(book?.cover_path)await db.storage.from('covers').remove([book.cover_path]);const {error}=await db.from('books').delete().eq('id',bookId);if(error)throw new Error('Eliminazione non riuscita');redirect('/admin')}

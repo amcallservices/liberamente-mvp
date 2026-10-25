@@ -6,6 +6,7 @@ drop policy if exists "admins delete books" on public.books;
 
 alter table public.profiles
   add column if not exists paypal_email text,
+  add column if not exists email text,
   add column if not exists payout_preference text not null default 'stripe' check (payout_preference in ('stripe','paypal'));
 
 alter type public.book_status add value if not exists 'blocked';
@@ -67,3 +68,8 @@ end;
 $$;
 drop trigger if exists books_notify_admins on public.books;
 create trigger books_notify_admins after update on public.books for each row execute procedure public.notify_admins_of_review();
+
+update public.profiles p set email=u.email from auth.users u where u.id=p.id and p.email is null;
+create or replace function public.handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
+begin insert into public.profiles(id,display_name,email) values(new.id,coalesce(new.raw_user_meta_data->>'display_name','Lettore'),new.email); return new; end;
+$$;

@@ -4,9 +4,11 @@ import {becomeAuthor} from './author-actions';
 import {BookAssets} from './book-assets';
 import {RoyaltyPreview} from './royalty-preview';
 import {eur} from '@/lib/money';
+import {AuthorDashboard} from './dashboard';
 
 const errors:Record<string,string>={campi:'Compila tutti i campi obbligatori: descrizione di almeno 80 caratteri e conferma dei diritti.',salvataggio:'Non è stato possibile salvare. Riprova.',materiali:'Prima carica sia il file del libro sia la copertina.',eliminazione:'Non è stato possibile eliminare il titolo.',pagamento:'Inserisci un indirizzo PayPal valido.'};
-export default async function Author({searchParams}:{searchParams:Promise<{errore?:string;messaggio?:string}>}){
+export default function Author({searchParams}:{searchParams:Promise<{errore?:string;messaggio?:string}>}){return <AuthorDashboard searchParams={searchParams}/>}
+async function LegacyAuthor({searchParams}:{searchParams:Promise<{errore?:string;messaggio?:string}>}){
  const q=await searchParams,s=await createClient();const {data:{user}}=await s.auth.getUser();
  if(!user)return <main className="wrap"><p className="eyebrow">Area autori</p><h1>Pubblica il tuo prossimo ebook.</h1><p>Accedi per creare una scheda, caricare il manoscritto e inviarlo in revisione.</p><a className="button" href="/accedi">Accedi</a></main>;
  const [{data:authorBooks},{data:royaltyEntries},{data:profile}]=await Promise.all([s.from('books').select('*').eq('author_id',user.id).order('created_at',{ascending:false}),s.from('royalty_ledger').select('author_amount_cents,gross_cents,created_at,paid_out_at,reversed_at').eq('author_id',user.id),s.from('profiles').select('role,stripe_account_id,paypal_email,payout_preference').eq('id',user.id).single()]);
