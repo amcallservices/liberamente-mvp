@@ -1,2 +1,2 @@
-import {createClient} from '@/lib/supabase/server';
-export default async function Library(){const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return <main className="wrap"><h1>La mia libreria</h1><p><a href="/accedi">Accedi</a> per vedere i tuoi acquisti.</p></main>;const {data:purchasedItems}=await s.from('purchases').select('id,books(title,slug)').eq('buyer_id',user.id).eq('status','paid');const purchases=purchasedItems??[];return <main className="wrap"><h1>La mia libreria</h1>{purchases.map((p:any)=><article className="card" key={p.id}><h2>{p.books?.title}</h2><form action="/api/download" method="POST"><input type="hidden" name="purchaseId" value={p.id}/><button>Scarica ebook</button></form></article>)}{!purchases.length&&<p>Non hai ancora ebook acquistati.</p>}</main>}
+import {redirect} from 'next/navigation';
+export default function Library(){redirect('/lettore')}
