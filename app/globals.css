@@ -8,3 +8,4 @@
 .payouts{margin:28px 0}.payouts h2{margin:0}.payout-table{overflow-x:auto}.payout-table table{min-width:880px}.payout-table small{color:#617068}.payout-action{display:flex;gap:6px;align-items:center;max-width:none}.payout-action input{margin:0;min-width:132px}.payout-action button{white-space:nowrap;padding:8px 10px}
 .admin-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:anywhere;min-height:7.5rem;margin:10px 0;color:#425047}
 .brand span{font:600 13px ui-sans-serif,system-ui,sans-serif;color:#617068;white-space:nowrap}
+.catalogue .cover-image{height:210px;object-fit:contain;background:#f0eadc}
