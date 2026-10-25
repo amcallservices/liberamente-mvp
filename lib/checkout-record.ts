@@ -21,6 +21,7 @@ export async function recordCompletedCheckout(session:Stripe.Checkout.Session){
       if(updated.error)throw updated.error;
     }
   }
+  if(!purchase)throw new Error('Registrazione acquisto non disponibile.');
   const authorAmount=authorRoyalty(gross);
   const {error:royaltyError}=await db.from('royalty_ledger').upsert({purchase_id:purchase.id,author_id:metadata.author_id,gross_cents:gross,platform_fee_cents:gross-authorAmount,author_amount_cents:authorAmount},{onConflict:'purchase_id'});
   if(royaltyError)throw royaltyError;
