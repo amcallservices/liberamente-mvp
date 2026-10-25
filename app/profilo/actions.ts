@@ -3,7 +3,7 @@ import {redirect} from 'next/navigation';
 import {createClient} from '@/lib/supabase/server';
 
 const allowedAvatarTypes=new Set(['image/jpeg','image/png','image/webp']);
-const maxAvatarSize=4*1024*1024;
+const maxAvatarSize=15*1024*1024;
 
 export async function saveProfile(form:FormData){
   const displayName=String(form.get('displayName')??'').trim();
