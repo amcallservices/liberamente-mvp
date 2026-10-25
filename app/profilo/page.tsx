@@ -1,0 +1,14 @@
+import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {avatarUrl} from '@/lib/avatars';
+import {saveProfile} from './actions';
+
+const errors:Record<string,string>={campi:'Inserisci un nome valido, un indirizzo email valido e una password di almeno 8 caratteri se desideri cambiarla.',foto:'La foto deve essere JPG, PNG o WebP e non superare 4 MB.',salvataggio:'Non è stato possibile salvare il profilo. Riprova.',autenticazione:'Non è stato possibile aggiornare email o password. Per sicurezza, riprova dopo avere effettuato nuovamente l’accesso.'};
+export default async function Profile({searchParams}:{searchParams:Promise<{errore?:string;messaggio?:string}>}){
+  const q=await searchParams,s=await createClient(),{data:{user}}=await s.auth.getUser();
+  if(!user)redirect('/accedi');
+  const {data:profile}=await s.from('profiles').select('display_name,role,avatar_path,email').eq('id',user.id).maybeSingle();
+  const image=avatarUrl(profile?.avatar_path);
+  const role=profile?.role==='author'||profile?.role==='admin'?'Autore':'Lettore';
+  return <main className="wrap profile-page"><p className="eyebrow">Il mio account</p><div className="section-head"><div><h1>Profilo</h1><p>Gestisci le informazioni visibili sulla piattaforma e le credenziali di accesso.</p></div><span className="stat">{role}</span></div>{q.errore&&<p className="notice">{errors[q.errore]??'Verifica i dati e riprova.'}</p>}{q.messaggio&&<p className="notice">{q.messaggio}</p>}<form action={saveProfile} className="profile-form card"><section className="profile-identity">{image?<img className="profile-avatar" src={image} alt="Foto profilo"/>:<div className="profile-avatar avatar-fallback">{(profile?.display_name||user.email||'U').slice(0,1).toUpperCase()}</div>}<div><h2>Identità pubblica</h2><p className="muted">Il nome viene mostrato accanto ai libri degli autori.</p><label>Foto profilo <span className="muted">(JPG, PNG o WebP, max 4 MB)</span></label><input name="avatar" type="file" accept="image/jpeg,image/png,image/webp"/></div></section><div className="profile-fields"><div><label>Nome pubblico</label><input name="displayName" required minLength={2} maxLength={80} defaultValue={profile?.display_name??''}/></div><div><label>Indirizzo email</label><input name="email" type="email" required defaultValue={user.email??profile?.email??''}/><small className="muted">Per modificare l’email dovrai confermare il link inviato al nuovo indirizzo.</small></div><div><label>Nuova password <span className="muted">(facoltativa)</span></label><input name="password" type="password" minLength={8} autoComplete="new-password" placeholder="Almeno 8 caratteri"/><small className="muted">Lascia vuoto questo campo per mantenere la password attuale.</small></div></div><button>Salva modifiche</button></form></main>;
+}
