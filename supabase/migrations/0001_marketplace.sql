@@ -1,0 +1,22 @@
+-- Run in Supabase SQL editor or via `supabase db push`. All ebook objects stay private.
+create type public.user_role as enum ('reader','author','admin');
+create type public.book_status as enum ('draft','pending_review','published','rejected');
+create type public.purchase_status as enum ('pending','paid','refunded');
+create table public.profiles (id uuid primary key references auth.users(id) on delete cascade, display_name text, role public.user_role not null default 'reader', stripe_account_id text unique, created_at timestamptz not null default now());
+create table public.books (id uuid primary key default gen_random_uuid(), author_id uuid not null references public.profiles(id), title text not null check(char_length(title) between 2 and 180), slug text not null unique, description text not null, price_cents integer not null check(price_cents between 99 and 9999), cover_path text, file_path text, status public.book_status not null default 'draft', published_at timestamptz, created_at timestamptz not null default now());
+create table public.purchases (id uuid primary key default gen_random_uuid(), book_id uuid not null references public.books(id), buyer_id uuid not null references public.profiles(id), stripe_checkout_session_id text not null unique, gross_cents integer not null check(gross_cents>=0), status public.purchase_status not null default 'pending', created_at timestamptz not null default now(), unique(book_id,buyer_id));
+create table public.royalty_ledger (id uuid primary key default gen_random_uuid(), purchase_id uuid not null unique references public.purchases(id), author_id uuid not null references public.profiles(id), gross_cents integer not null, platform_fee_cents integer not null, author_amount_cents integer not null, paid_out_at timestamptz, created_at timestamptz not null default now());
+alter table public.profiles enable row level security; alter table public.books enable row level security; alter table public.purchases enable row level security; alter table public.royalty_ledger enable row level security;
+create or replace function public.is_admin() returns boolean language sql stable security definer set search_path=public as $$ select exists(select 1 from public.profiles where id=auth.uid() and role='admin') $$;
+create policy "profile own read" on public.profiles for select using (id=auth.uid() or public.is_admin());
+create policy "profile own update" on public.profiles for update using (id=auth.uid()) with check (id=auth.uid() and role=(select role from public.profiles where id=auth.uid()));
+create policy "public published books" on public.books for select using (status='published' or author_id=auth.uid() or public.is_admin());
+create policy "authors create books" on public.books for insert with check (author_id=auth.uid() and exists(select 1 from public.profiles where id=auth.uid() and role in ('author','admin')));
+create policy "authors update drafts" on public.books for update using (author_id=auth.uid() and status in ('draft','rejected')) with check (author_id=auth.uid());
+create policy "buyers read purchases" on public.purchases for select using (buyer_id=auth.uid());
+create policy "authors read their royalties" on public.royalty_ledger for select using (author_id=auth.uid());
+create or replace function public.handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$ begin insert into public.profiles(id,display_name) values(new.id,coalesce(new.raw_user_meta_data->>'display_name','Lettore')); return new; end; $$;
+create or replace function public.become_author() returns void language plpgsql security definer set search_path=public as $$ begin update public.profiles set role='author' where id=auth.uid() and role='reader'; end; $$;
+create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
+insert into storage.buckets(id,name,public) values ('ebooks','ebooks',false) on conflict do nothing;
+create policy "authors access own source files" on storage.objects for all using (bucket_id='ebooks' and (storage.foldername(name))[1]=auth.uid()::text) with check (bucket_id='ebooks' and (storage.foldername(name))[1]=auth.uid()::text);
