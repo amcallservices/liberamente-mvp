@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
 import { admin } from '@/lib/supabase/admin';
-import { authorRoyalty } from '@/lib/money';
+import {recordCompletedCheckout} from '@/lib/checkout-record';
 
 export async function POST(req: Request) {
   const signature = req.headers.get('stripe-signature');
@@ -12,12 +12,7 @@ export async function POST(req: Request) {
   catch { return NextResponse.json({ error: 'Firma non valida' }, { status: 400 }); }
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    const metadata = session.metadata;
-    if (metadata?.book_id && metadata.buyer_id && metadata.author_id && session.payment_status === 'paid') {
-      const db = admin(); const gross = session.amount_total ?? 0;
-      const { data: purchase } = await db.from('purchases').upsert({ book_id: metadata.book_id, buyer_id: metadata.buyer_id, stripe_checkout_session_id: session.id, stripe_payment_intent_id: typeof session.payment_intent==='string'?session.payment_intent:null, gross_cents: gross, status: 'paid' }, { onConflict: 'stripe_checkout_session_id' }).select('id').single();
-      if (purchase) { const authorAmount = authorRoyalty(gross); await db.from('royalty_ledger').upsert({ purchase_id: purchase.id, author_id: metadata.author_id, gross_cents: gross, platform_fee_cents: gross - authorAmount, author_amount_cents: authorAmount }, { onConflict: 'purchase_id' }); }
-    }
+    try{await recordCompletedCheckout(session)}catch(error){console.error('Impossibile registrare l’acquisto Stripe',error);return NextResponse.json({error:'Registrazione acquisto non riuscita'},{status:500})}
   }
   if(event.type==='charge.refunded'){const charge=event.data.object as Stripe.Charge;if(typeof charge.payment_intent==='string'){const db=admin();const {data:purchase}=await db.from('purchases').update({status:'refunded'}).eq('stripe_payment_intent_id',charge.payment_intent).select('id').maybeSingle();if(purchase)await db.from('royalty_ledger').update({reversed_at:new Date().toISOString()}).eq('purchase_id',purchase.id)}}
   return NextResponse.json({ received: true });
