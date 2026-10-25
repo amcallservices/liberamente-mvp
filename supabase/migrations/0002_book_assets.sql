@@ -1,4 +1,9 @@
 -- Run this migration in the Supabase SQL Editor after 0001_marketplace.sql.
+drop policy if exists "authors access own cover files" on storage.objects;
+drop policy if exists "authors delete unpublished books" on public.books;
+drop policy if exists "admins moderate books" on public.books;
+drop policy if exists "admins delete books" on public.books;
+
 alter table public.profiles
   add column if not exists paypal_email text,
   add column if not exists payout_preference text not null default 'stripe' check (payout_preference in ('stripe','paypal'));
