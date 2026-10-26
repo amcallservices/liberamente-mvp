@@ -13,8 +13,8 @@ function escapeHtml(value: string) {
 }
 
 async function sendEmail({to, subject, htmlContent}: {to?: string | null; subject: string; htmlContent: string}) {
-  const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.EMAIL_FROM;
+  const apiKey = process.env.BREVO_API_KEY?.trim();
+  const senderEmail = process.env.EMAIL_FROM?.trim();
 
   // La mancata configurazione o un errore email non deve fermare il flusso editoriale.
   if (!apiKey || !senderEmail || !to) {
@@ -38,7 +38,8 @@ async function sendEmail({to, subject, htmlContent}: {to?: string | null; subjec
       }),
     });
     if (!response.ok) {
-      console.error(`Notifica Brevo non inviata: ${response.status}`);
+      const diagnostic = (await response.text()).slice(0, 500);
+      console.error(`Notifica Brevo non inviata: ${response.status}${diagnostic ? ` — ${diagnostic}` : ''}`);
       return false;
     }
     return true;
