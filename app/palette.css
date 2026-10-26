@@ -1,0 +1,21 @@
+/* Palette editoriale: carta calda, verde bosco e piccoli accenti ottone. */
+:root{--ink:#1e2a25;--paper:#fbf8f1;--moss:#175c45;--moss-dark:#104634;--sand:#ebe2d1;--card:#fffdf9;--line:#d8ccba;--sage:#e5f0e8;--gold:#a87526;--gold-soft:#f7eedc;--muted:#627068}
+body{background:var(--paper)}
+header{background:rgba(255,253,249,.94);box-shadow:0 1px 0 rgba(58,48,31,.04)}
+.hero{background:linear-gradient(120deg,#eee3d0 0%,#f8f3e9 58%,#e4eee5 100%)}
+.card{background:var(--card);box-shadow:0 6px 18px rgba(43,52,40,.035)}
+.cover,.cover-image{background:var(--sand)}
+.muted,.benefits span,.hero-note small,.payout-table small{color:var(--muted)}
+.button,button{box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.button:hover,button:hover{background:var(--moss-dark)}
+.button.alt{box-shadow:none}
+.button.alt:hover{background:var(--sage)}
+input,textarea,select{background:#fffefa}
+input:focus,textarea:focus,select:focus{outline:3px solid rgba(168,117,38,.18);border-color:var(--gold)}
+.notice{background:var(--sage);border:1px solid #c8dccd}
+.rating{color:var(--gold)}
+.category-panel a:hover,.category-panel .active-category{background:var(--sage);color:var(--moss-dark)}
+.published-preview,.a-plus-status.approved{background:var(--sage);color:var(--moss-dark)}
+.book-card,.review-card,.category-panel{background:var(--card)}
+.empty{background:#fffdf9;border-color:#c9bca6}
+footer{background:#f3ede1}
