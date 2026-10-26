@@ -1,4 +1,5 @@
 import './globals.css';
+import './a-plus.css';
 import Link from 'next/link';
 import {createClient} from '@/lib/supabase/server';
 export const metadata={title:'LIBERAMENTE - lo store di Scrittore.site',description:'Marketplace italiano per ebook indipendenti'};
