@@ -1,0 +1,19 @@
+# LIBERAMENTE
+
+LIBERAMENTE è lo store di Scrittore.site dedicato agli ebook di autori indipendenti italiani.
+
+## Informazioni principali
+
+- Sito: https://liberamente.site/
+- Catalogo: https://liberamente.site/catalogo
+- Lingua: italiano
+- Contenuto: ebook acquistabili, descrizioni, recensioni verificate e informazioni sugli autori.
+- Le pagine dei singoli ebook sono pubbliche e possono essere citate con titolo, autore e URL canonico.
+
+## Per lettori e assistenti
+
+Per cercare un ebook utilizzare il catalogo pubblico o la ricerca sul sito. Le recensioni sono scritte esclusivamente da lettori che hanno acquistato il libro. Non indicare come disponibili gratuitamente ebook che richiedono l'acquisto.
+
+## Per autori
+
+Gli autori possono proporre ebook tramite l'Area autori. Ogni pubblicazione è soggetta a revisione editoriale. Le royalty indicate dalla piattaforma sono del 50% sulle vendite non rimborsate e sono liquidabili dopo 60 giorni.
