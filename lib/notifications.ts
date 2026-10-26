@@ -12,6 +12,12 @@ function escapeHtml(value: string) {
   })[character] || character);
 }
 
+function redactEmail(value: string) {
+  const atIndex = value.indexOf('@');
+  if (atIndex <= 1) return 'configurato';
+  return `${value.slice(0, 2)}***${value.slice(atIndex)}`;
+}
+
 async function sendEmail({to, subject, htmlContent}: {to?: string | null; subject: string; htmlContent: string}) {
   const apiKey = process.env.BREVO_API_KEY?.trim();
   const senderEmail = process.env.EMAIL_FROM?.trim();
@@ -44,8 +50,8 @@ async function sendEmail({to, subject, htmlContent}: {to?: string | null; subjec
         status: response.status,
         statusText: response.statusText,
         diagnostic: diagnostic || 'Brevo non ha restituito un dettaglio.',
-        sender: senderEmail,
-        recipient: recipientEmail,
+        sender: redactEmail(senderEmail),
+        recipient: redactEmail(recipientEmail),
       });
       return false;
     }
