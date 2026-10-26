@@ -9,3 +9,6 @@
 .admin-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:anywhere;min-height:7.5rem;margin:10px 0;color:#425047}
 .brand span{font:600 13px ui-sans-serif,system-ui,sans-serif;color:#617068;white-space:nowrap}
 .catalogue .cover-image{height:210px;object-fit:contain;background:#f0eadc}
+.reader-book-item{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:16px;align-items:center}.reader-cover{width:86px;height:129px;object-fit:contain;border:1px solid var(--line);border-radius:7px;background:var(--sand)}.reader-actions{display:grid;gap:10px;justify-items:end}.reader-actions form{max-width:none}.reader-actions input{display:none}@media(max-width:720px){.reader-book-item{grid-template-columns:70px minmax(0,1fr)}.reader-cover{width:70px;height:105px}.reader-actions{grid-column:1/-1;justify-items:start}}
+.revision-history{margin:0 0 22px}.revision-history h2{margin-top:0}.revision-history article{padding:12px 0;border-top:1px solid var(--line)}.revision-history article:first-of-type{border-top:0}.revision-history p{margin:5px 0}
+.admin-book-group{margin-top:42px}.admin-book-group .empty{padding:22px;text-align:left}.admin-book-group .empty p{margin:0}
