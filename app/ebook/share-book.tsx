@@ -1,0 +1,3 @@
+'use client';
+import {useState} from 'react';
+export function ShareBook({title}:{title:string}){const [message,setMessage]=useState('');async function share(){try{const url=window.location.href;if(navigator.share){await navigator.share({title:`${title} | LIBERAMENTE`,text:`Scopri ${title} su LIBERAMENTE.`,url});return}await navigator.clipboard.writeText(url);setMessage('Link copiato negli appunti.')}catch{setMessage('Condivisione annullata.')}}return <div className="share-book"><button type="button" className="button alt" onClick={share}>Condividi questo libro</button>{message&&<span className="muted" role="status">{message}</span>}</div>}
