@@ -32,9 +32,9 @@ Per promuovere un amministratore, esegui una volta nel SQL editor (sostituendo l
 update public.profiles set role = 'admin' where id = 'UUID-UTENTE';
 ```
 
-## Stripe Connect e royalty
+## Pagamenti e royalty
 
-L’onboarding crea un account Express italiano per l’autore. Il checkout crea una destination charge verso `profiles.stripe_account_id` e trattiene il 15% come `application_fee_amount`; il ledger conserva lo stesso calcolo (autore 85%) come fonte contabile. Un ebook senza account Connect collegato non può essere acquistato. Prima di attivare pagamenti reali servono termini di vendita, procedura rimborsi, verifica fiscale/IVA e policy copyright.
+Il checkout accetta carta e PayPal tramite Stripe. Per ogni vendita non rimborsata, il ledger registra una royalty pari al 50% del prezzo incassato. Le somme diventano liquidabili dopo 60 giorni: l’amministrazione può registrare il pagamento nella sezione Compensi autori, con preferenza Stripe Connect o PayPal indicata dall’autore. Un rimborso annulla la royalty collegata. Prima di attivare pagamenti reali servono termini di vendita, procedura rimborsi, verifica fiscale/IVA e policy copyright.
 
 ## Deploy, senza pubblicazione automatica
 
