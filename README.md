@@ -36,6 +36,10 @@ update public.profiles set role = 'admin' where id = 'UUID-UTENTE';
 
 Il checkout accetta carta e PayPal tramite Stripe. Per ogni vendita non rimborsata, il ledger registra una royalty pari al 50% del prezzo incassato. Le somme diventano liquidabili dopo 60 giorni: l’amministrazione può registrare il pagamento nella sezione Compensi autori, con preferenza Stripe Connect o PayPal indicata dall’autore. Un rimborso annulla la royalty collegata. Prima di attivare pagamenti reali servono termini di vendita, procedura rimborsi, verifica fiscale/IVA e policy copyright.
 
+## Email di revisione editoriale
+
+Le notifiche della revisione usano Brevo: l'amministratore riceve un'email quando un autore invia o reinvia un ebook completo alla revisione; l'autore riceve l'esito quando il libro viene pubblicato, rimandato con correzioni o bloccato. Configura in Vercel, solo lato server, le variabili `BREVO_API_KEY`, `EMAIL_FROM` (un mittente verificato in Brevo) e `ADMIN_EMAIL`. L'assenza o un errore del servizio email non interrompe mai il flusso editoriale.
+
 ## Deploy, senza pubblicazione automatica
 
 1. Inizializza Git e crea un repository GitHub privato: `git init`, `git add .`, `git commit -m "Initial ebook marketplace MVP"`.
