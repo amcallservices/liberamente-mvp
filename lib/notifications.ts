@@ -15,9 +15,10 @@ function escapeHtml(value: string) {
 async function sendEmail({to, subject, htmlContent}: {to?: string | null; subject: string; htmlContent: string}) {
   const apiKey = process.env.BREVO_API_KEY?.trim();
   const senderEmail = process.env.EMAIL_FROM?.trim();
+  const recipientEmail = to?.trim();
 
   // La mancata configurazione o un errore email non deve fermare il flusso editoriale.
-  if (!apiKey || !senderEmail || !to) {
+  if (!apiKey || !senderEmail || !recipientEmail) {
     console.warn('Notifica email non inviata: configurazione Brevo mancante.');
     return false;
   }
@@ -32,14 +33,20 @@ async function sendEmail({to, subject, htmlContent}: {to?: string | null; subjec
       },
       body: JSON.stringify({
         sender: {name: 'LIBERAMENTE', email: senderEmail},
-        to: [{email: to}],
+        to: [{email: recipientEmail}],
         subject,
         htmlContent,
       }),
     });
     if (!response.ok) {
       const diagnostic = (await response.text()).slice(0, 500);
-      console.error(`Notifica Brevo non inviata: ${response.status}${diagnostic ? ` — ${diagnostic}` : ''}`);
+      console.error('Notifica Brevo non inviata:', {
+        status: response.status,
+        statusText: response.statusText,
+        diagnostic: diagnostic || 'Brevo non ha restituito un dettaglio.',
+        sender: senderEmail,
+        recipient: recipientEmail,
+      });
       return false;
     }
     return true;
