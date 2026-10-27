@@ -2,6 +2,7 @@ import './globals.css';
 import './a-plus.css';
 import './palette.css';
 import './storefront.css';
+import './lettore/reading.css';
 import Link from 'next/link';
 import type {Metadata} from 'next';
 import {createClient} from '@/lib/supabase/server';
