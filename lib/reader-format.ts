@@ -12,7 +12,7 @@ export function normaliseReaderText(text:string){
 function sentences(text:string){
   const compact=text.replace(/\s+/g,' ').trim();
   if(typeof Intl!=='undefined'&&'Segmenter' in Intl){
-    const Segmenter=(Intl as typeof Intl&{Segmenter:new(locale:string,options:{granularity:'sentence'})=>{segment:(value:string)=>Iterable<{segment:string}>}}).Segmenter;
+  const Segmenter=(Intl as any).Segmenter;
     return Array.from(new Segmenter('it',{granularity:'sentence'}).segment(compact),part=>part.segment.trim()).filter(Boolean);
   }
   return compact.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g)?.map(value=>value.trim()).filter(Boolean)??[];

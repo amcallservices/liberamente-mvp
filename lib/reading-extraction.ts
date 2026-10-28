@@ -4,6 +4,7 @@ import {markReaderText,normaliseReaderText} from '@/lib/reader-format';
 
 const previewCharacters=26000;
 const parsePdf=pdf as unknown as (buffer:Buffer,options?:{max?:number;pagerender?:(pageData:any)=>Promise<string>})=>Promise<{text:string}>;
+const convertWordToHtml=mammoth as unknown as {convertToHtml:(input:{buffer:Buffer})=>Promise<{value:string}>};
 
 function clean(text:string){
   return normaliseReaderText(text).replace(/[ \t]{2,}/g,' ');
@@ -46,7 +47,7 @@ export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
     const isPdf=mimeType==='application/pdf';
     const raw=isPdf
       ?(await parsePdf(buffer,{pagerender:renderPdfPage})).text
-      :htmlToReaderText((await mammoth.convertToHtml({buffer})).value);
+      :htmlToReaderText((await convertWordToHtml.convertToHtml({buffer})).value);
     const fullText=clean(raw);
     if(fullText.length<80)return null;
     // Per i PDF vengono conservate righe e distanze tra paragrafi: l'estratto
