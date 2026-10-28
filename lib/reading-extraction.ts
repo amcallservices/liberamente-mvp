@@ -3,6 +3,7 @@ import pdf from 'pdf-parse';
 import {markReaderText,normaliseReaderText} from '@/lib/reader-format';
 
 const previewCharacters=26000;
+const parsePdf=pdf as unknown as (buffer:Buffer,options?:{max?:number;pagerender?:(pageData:any)=>Promise<string>})=>Promise<{text:string}>;
 
 function clean(text:string){
   return normaliseReaderText(text).replace(/[ \t]{2,}/g,' ');
@@ -44,13 +45,13 @@ export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
   try{
     const isPdf=mimeType==='application/pdf';
     const raw=isPdf
-      ?(await pdf(buffer,{pagerender:renderPdfPage})).text
+      ?(await parsePdf(buffer,{pagerender:renderPdfPage})).text
       :htmlToReaderText((await mammoth.convertToHtml({buffer})).value);
     const fullText=clean(raw);
     if(fullText.length<80)return null;
     // Per i PDF vengono conservate righe e distanze tra paragrafi: l'estratto
     // contiene le prime dieci pagine, mentre Word conserva un equivalente sicuro.
-    const previewText=isPdf?clean((await pdf(buffer,{max:10,pagerender:renderPdfPage})).text):fullText.slice(0,previewCharacters);
+    const previewText=isPdf?clean((await parsePdf(buffer,{max:10,pagerender:renderPdfPage})).text):fullText.slice(0,previewCharacters);
     return {fullText:markReaderText(fullText),previewText:markReaderText(previewText.length>=80?previewText:fullText.slice(0,previewCharacters))};
   }catch(error){
     console.error('Estrazione testo ebook non riuscita',error);
