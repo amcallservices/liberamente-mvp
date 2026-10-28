@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import {SmartSearch} from '@/components/smart-search';
 import {rankBooksForQuery} from '@/lib/book-search';
 import {coverUrl} from '@/lib/covers';
 import {BOOK_CATEGORIES} from '@/lib/categories';
@@ -36,7 +35,6 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
   return <main className="wrap">
     <p className="eyebrow">Ebook indipendenti</p>
     <h1>Trova la tua prossima lettura.</h1>
-    <SmartSearch className="catalog-search" defaultValue={query} category={categoria}/>
     <div className="catalog-layout">
       <aside className="category-panel" aria-label="Categorie del catalogo">
         <div className="category-panel-heading"><strong>Esplora per genere</strong><span>Generi disponibili</span></div>
