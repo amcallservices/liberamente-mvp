@@ -5,7 +5,6 @@ import {createClient} from '@/lib/supabase/server';
 import {notifyAdminBookSubmitted} from '@/lib/notifications';
 import {admin} from '@/lib/supabase/admin';
 import {extractEbookText} from '@/lib/reading-extraction';
-import {isCurrentReaderText} from '@/lib/reader-format';
 
 const schema=z.object({title:z.string().trim().min(2).max(180),subtitle:z.string().trim().max(220),description:z.string().trim().min(80).max(4000),categories:z.array(z.string().trim().min(2).max(80)).min(1).max(3),price:z.coerce.number().min(.99).max(99.99),rights:z.literal('on')});
 
@@ -17,8 +16,10 @@ export async function deleteBook(form:FormData){const bookId=String(form.get('bo
 export async function setBookPreview(form:FormData){
   const bookId=String(form.get('bookId')),enabled=String(form.get('enabled'))==='true',s=await createClient(),{data:{user}}=await s.auth.getUser();
   if(!user)redirect('/accedi');
-  const {data:content}=await s.from('book_reading_content').select('book_id,full_text').eq('book_id',bookId).eq('author_id',user.id).maybeSingle();
-  if(enabled&&!isCurrentReaderText(content?.full_text)){
+  const {data:content}=await s.from('book_reading_content').select('book_id').eq('book_id',bookId).eq('author_id',user.id).maybeSingle();
+  // L'attivazione rigenera sempre il testo: così anche i titoli già caricati
+  // ricevono l'estratto aggiornato dalle pagine 20–30.
+  if(enabled){
     const {data:book}=await s.from('books').select('file_path,file_mime_type').eq('id',bookId).eq('author_id',user.id).maybeSingle();
     if(!book?.file_path)redirect('/autore?errore=anteprima');
     const {data:file}=await admin().storage.from('ebooks').download(book.file_path);
@@ -30,6 +31,6 @@ export async function setBookPreview(form:FormData){
   }
   const {error}=await s.from('book_reading_content').update({preview_enabled:enabled}).eq('book_id',bookId).eq('author_id',user.id);
   if(error||(!content&&!enabled))redirect('/autore?errore=anteprima');
-  redirect(`/autore?messaggio=${enabled?'Anteprima+gratuita+attivata+per+le+prime+10+pagine.':'Anteprima+gratuita+disattivata.'}`);
+  redirect(`/autore?messaggio=${enabled?'Anteprima+gratuita+attivata+con+le+pagine+20-30.':'Anteprima+gratuita+disattivata.'}`);
 }
 export async function savePayoutSettings(form:FormData){const preference=String(form.get('payoutPreference')),paypal=String(form.get('paypalEmail')).trim(),s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');if(!['stripe','paypal'].includes(preference)||(preference==='paypal'&&!z.string().email().safeParse(paypal).success))redirect('/autore?errore=pagamento');const {error}=await s.from('profiles').update({payout_preference:preference,paypal_email:preference==='paypal'?paypal:null}).eq('id',user.id);if(error)redirect('/autore?errore=pagamento');redirect('/autore?messaggio=Preferenza+di+accredito+salvata.')}

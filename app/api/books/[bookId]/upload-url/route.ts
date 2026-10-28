@@ -1,16 +1,16 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '@/lib/supabase/server';
 
-const manuscriptTypes=new Set(['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+const manuscriptTypes=new Set(['application/pdf']);
 const coverTypes=new Set(['image/jpeg','image/png']);
-function extension(type:string){return type==='application/pdf'?'pdf':type==='image/png'?'png':type==='image/jpeg'?'jpg':'docx'}
+function extension(type:string){return type==='application/pdf'?'pdf':type==='image/png'?'png':'jpg'}
 
 export async function POST(req:Request,{params}:{params:Promise<{bookId:string}>}){
   const {bookId}=await params;
   const body=await req.json().catch(()=>null) as {kind?:string;contentType?:string}|null;
   if(!body||!['manuscript','cover'].includes(body.kind??''))return NextResponse.json({error:'Richiesta non valida'},{status:400});
   const allowed=body.kind==='manuscript'?manuscriptTypes:coverTypes;
-  if(!body.contentType||!allowed.has(body.contentType))return NextResponse.json({error:body.kind==='manuscript'?'Carica un PDF o un documento Word (.docx).':'Carica una copertina PNG o JPEG.'},{status:415});
+  if(!body.contentType||!allowed.has(body.contentType))return NextResponse.json({error:body.kind==='manuscript'?'Carica il libro in formato PDF.':'Carica una copertina PNG o JPEG.'},{status:415});
   const s=await createClient();const {data:{user}}=await s.auth.getUser();
   if(!user)return NextResponse.json({error:'Accesso richiesto'},{status:401});
   const {data:book}=await s.from('books').select('id,status').eq('id',bookId).eq('author_id',user.id).maybeSingle();

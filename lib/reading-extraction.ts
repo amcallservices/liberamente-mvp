@@ -3,6 +3,9 @@ import pdf from 'pdf-parse';
 import {markReaderText,normaliseReaderText} from '@/lib/reader-format';
 
 const previewCharacters=26000;
+const previewFirstPage=20;
+const previewLastPage=30;
+const unavailablePreview='L’anteprima dalle pagine 20–30 non è disponibile perché questo ebook non raggiunge la pagina 20.';
 const parsePdf=pdf as unknown as (buffer:Buffer,options?:{max?:number;pagerender?:(pageData:any)=>Promise<string>})=>Promise<{text:string}>;
 const convertWordToHtml=mammoth as unknown as {convertToHtml:(input:{buffer:Buffer})=>Promise<{value:string}>};
 
@@ -42,6 +45,16 @@ async function renderPdfPage(pageData:any){
   return `${output.join('\n')}\n\n`;
 }
 
+async function extractPdfPages(buffer:Buffer,fromPage:number,toPage:number){
+  let currentPage=0;
+  const extracted=await parsePdf(buffer,{max:toPage,pagerender:async(pageData:any)=>{
+    currentPage+=1;
+    const pageText=await renderPdfPage(pageData);
+    return currentPage>=fromPage&&currentPage<=toPage?pageText:'';
+  }});
+  return clean(extracted.text);
+}
+
 export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
   try{
     const isPdf=mimeType==='application/pdf';
@@ -50,10 +63,13 @@ export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
       :htmlToReaderText((await convertWordToHtml.convertToHtml({buffer})).value);
     const fullText=clean(raw);
     if(fullText.length<80)return null;
-    // Per i PDF vengono conservate righe e distanze tra paragrafi: l'estratto
-    // contiene le prime dieci pagine, mentre Word conserva un equivalente sicuro.
-    const previewText=isPdf?clean((await parsePdf(buffer,{max:10,pagerender:renderPdfPage})).text):fullText.slice(0,previewCharacters);
-    return {fullText:markReaderText(fullText),previewText:markReaderText(previewText.length>=80?previewText:fullText.slice(0,previewCharacters))};
+    // L'estratto pubblico è sempre composto dalle pagine 20–30 del PDF.
+    // Per libri più brevi salviamo un avviso leggibile anziché un estratto vuoto.
+    const extractedPreview=isPdf
+      ?await extractPdfPages(buffer,previewFirstPage,previewLastPage)
+      :fullText.slice(0,previewCharacters);
+    const previewText=extractedPreview.length>=80?extractedPreview:unavailablePreview;
+    return {fullText:markReaderText(fullText),previewText:markReaderText(previewText)};
   }catch(error){
     console.error('Estrazione testo ebook non riuscita',error);
     return null;

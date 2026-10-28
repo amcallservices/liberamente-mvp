@@ -6,6 +6,8 @@ import {extractEbookText} from '@/lib/reading-extraction';
 export async function POST(req:Request,{params}:{params:Promise<{bookId:string}>}){
   const {bookId}=await params;const body=await req.json().catch(()=>null) as {kind?:string;path?:string;fileName?:string;contentType?:string;size?:number}|null;
   if(!body||!['manuscript','cover'].includes(body.kind??''))return NextResponse.json({error:'Richiesta non valida'},{status:400});
+  if(body.kind==='manuscript'&&body.contentType!=='application/pdf')return NextResponse.json({error:'Il libro deve essere un file PDF.'},{status:415});
+  if(body.kind==='cover'&&!['image/jpeg','image/png'].includes(body.contentType??''))return NextResponse.json({error:'La copertina deve essere PNG o JPEG.'},{status:415});
   const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return NextResponse.json({error:'Accesso richiesto'},{status:401});
   const prefix=`${user.id}/${bookId}/`;if(!body.path?.startsWith(prefix))return NextResponse.json({error:'Percorso non autorizzato'},{status:403});
   const changes=body.kind==='cover'?{cover_path:body.path,cover_alt_text:'Copertina di ebook'}:{file_path:body.path,file_name:body.fileName?.slice(0,180)??'ebook',file_mime_type:body.contentType,file_size_bytes:body.size};

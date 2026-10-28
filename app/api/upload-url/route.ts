@@ -1,2 +1,11 @@
-import {NextResponse} from 'next/server';import {createClient} from '@/lib/supabase/server';
-export async function POST(req:Request){const form=await req.formData(),bookId=String(form.get('bookId'));const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return NextResponse.redirect(new URL('/accedi',req.url));const {data:book}=await s.from('books').select('id').eq('id',bookId).eq('author_id',user.id).single();if(!book)return NextResponse.json({error:'Non autorizzato'},{status:403});const path=`${user.id}/${bookId}/manoscritto.epub`;const {data,error}=await s.storage.from('ebooks').createSignedUploadUrl(path);if(error)return NextResponse.json({error:'Impossibile creare l’upload'},{status:500});await s.from('books').update({file_path:path,status:'pending_review'}).eq('id',bookId);return NextResponse.json({uploadUrl:data.signedUrl,path,token:data.token,message:'Carica via PUT entro 2 ore con Content-Type application/epub+zip; il titolo è stato inviato in revisione.'})}
+import {NextResponse} from 'next/server';
+
+// Endpoint precedente, mantenuto solo per restituire un messaggio esplicito.
+// Tutti i manoscritti passano ora dal flusso autenticato dell'Area autori,
+// che accetta esclusivamente PDF e controlla lo stato editoriale del libro.
+export async function POST(){
+  return NextResponse.json(
+    {error:'Questo metodo non è più disponibile. Carica il manoscritto PDF dall’Area autori.'},
+    {status:410},
+  );
+}
