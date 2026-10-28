@@ -19,16 +19,20 @@ export default async function Layout({children}:{children:React.ReactNode}) {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structuredData)}}/>
     <header>
-      <Link className="brand" href="/">LIBERAMENTE.site <span>– lo store di Scrittore.site</span></Link>
-      <SmartSearch className="header-search" />
-      <nav>
-        <Link href="/catalogo">Catalogo</Link>
-        <Link href="/lettore">Area lettori</Link>
-        <Link href="/autore">Area autori</Link>
-        <a className="write-book-link" href="https://scrittoresite.streamlit.app/" target="_blank" rel="noopener noreferrer">Scrivi il tuo libro <span aria-hidden="true">↗</span></a>
-        {isPrimaryAdmin&&<Link className="nav-login" href="/admin">Amministrazione</Link>}
-        {user?<><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
-      </nav>
+      <div className="header-top">
+        <Link className="brand" href="/">LIBERAMENTE.site <span>– lo store di Scrittore.site</span></Link>
+        <nav>
+          <Link href="/catalogo">Catalogo</Link>
+          <Link href="/lettore">Area lettori</Link>
+          <Link href="/autore">Area autori</Link>
+          <a className="write-book-link" href="https://scrittoresite.streamlit.app/" target="_blank" rel="noopener noreferrer">Scrivi il tuo libro <span aria-hidden="true">↗</span></a>
+          {isPrimaryAdmin&&<Link className="nav-login" href="/admin">Amministrazione</Link>}
+          {user?<><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
+        </nav>
+      </div>
+      <div className="header-search-row">
+        <SmartSearch className="header-search" />
+      </div>
     </header>
     {children}
     <footer><div className="wrap"><strong>LIBERAMENTE.site – lo store di Scrittore.site</strong> · una casa per ebook indipendenti. Pagamenti sicuri, download protetti.</div></footer>
