@@ -1,36 +1,25 @@
 'use client';
 
-
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {readerBlocksFromText,speechChunksFromBlocks,type ReaderBlock} from '@/lib/reader-format';
 
 type Props={title:string;text:string;mode:'preview'|'full'};
-type Chapter={title:string;start:number};
+type Chapter={title:string;blockIndex:number};
 
-function splitSentences(text:string){
-  const normalized=text.replace(/\r/g,'').trim();
-  if(typeof Intl!=='undefined'&&'Segmenter' in Intl){
-    const Segmenter=(Intl as any).Segmenter;
-    return Array.from(new Segmenter('it',{granularity:'sentence'}).segment(normalized) as Iterable<{segment:string}>,(part:{segment:string})=>part.segment.trim()).filter(Boolean);
-  }
-  return normalized.match(/[^.!?\n]+[.!?]+|[^\n]+$/g)?.map(part=>part.trim()).filter(Boolean)??[];
-}
-
-function chaptersFor(sentences:string[]):Chapter[]{
-  const chapters:Chapter[]=[{title:'Inizio',start:0}];
-  sentences.forEach((sentence,index)=>{
-    const line=sentence.replace(/^#+\s*/,'').trim();
-    if(/^(capitolo\s+\w+|chapter\s+\w+|(?:[0-9]+|[IVXLCDM]+)[.\s]+[A-ZÀ-Ý])/i.test(line))chapters.push({title:line.slice(0,80),start:index});
-  });
+function chaptersFor(blocks:ReaderBlock[]):Chapter[]{
+  const chapters:Chapter[]=[{title:'Inizio del libro',blockIndex:0}];
+  blocks.forEach((block,index)=>{if(block.kind==='heading'&&index>0)chapters.push({title:block.text.slice(0,80),blockIndex:index});});
   return chapters;
 }
 
 export function ReadingExperience({title,text,mode}:Props){
-  const sentences=useMemo(()=>splitSentences(text),[text]);
-  const chapters=useMemo(()=>chaptersFor(sentences),[sentences]);
-  const [voices,setVoices]=useState<SpeechSynthesisVoice[]>([]),[voiceUri,setVoiceUri]=useState(''),[rate,setRate]=useState('1'),[chapter,setChapter]=useState('0'),[active,setActive]=useState<number|null>(null),[playing,setPlaying]=useState(false);
-  const indexRef=useRef(0),stoppedRef=useRef(true),speechRef=useRef<SpeechSynthesis|null>(null);
-  const modeLabel=mode==='preview'?'Leggi un estratto gratuito':'Leggi e ascolta nel sito';
-  const selectedStart=chapters[Number(chapter)]?.start??0;
+  const blocks=useMemo(()=>readerBlocksFromText(text),[text]);
+  const chunks=useMemo(()=>speechChunksFromBlocks(blocks),[blocks]);
+  const chapters=useMemo(()=>chaptersFor(blocks),[blocks]);
+  const [voices,setVoices]=useState<SpeechSynthesisVoice[]>([]),[voiceUri,setVoiceUri]=useState(''),[rate,setRate]=useState('1'),[chapter,setChapter]=useState('0'),[activeBlock,setActiveBlock]=useState<number|null>(null),[playing,setPlaying]=useState(false);
+  const chunkIndexRef=useRef(0),stoppedRef=useRef(true),speechRef=useRef<SpeechSynthesis|null>(null);
+  const modeLabel=mode==='preview'?'Apri e leggi l’estratto':'Apri il lettore';
+  const selectedBlock=chapters[Number(chapter)]?.blockIndex??0;
 
   useEffect(()=>{
     if(!('speechSynthesis' in window))return;
@@ -40,36 +29,37 @@ export function ReadingExperience({title,text,mode}:Props){
     return()=>{speech.removeEventListener('voiceschanged',load);speech.cancel()};
   },[]);
 
-  useEffect(()=>{if(active!==null)document.getElementById(`reader-sentence-${mode}-${active}`)?.scrollIntoView({block:'nearest',behavior:'smooth'})},[active,mode]);
+  useEffect(()=>{if(activeBlock!==null)document.getElementById(`reader-block-${mode}-${activeBlock}`)?.scrollIntoView({block:'nearest',behavior:'smooth'})},[activeBlock,mode]);
 
-  const stop=()=>{stoppedRef.current=true;speechRef.current?.cancel();setPlaying(false);setActive(null)};
-  const speakFrom=(start:number)=>{
-    const speech=speechRef.current;
-    if(!speech||!sentences.length)return;
-    speech.cancel();stoppedRef.current=false;indexRef.current=start;setPlaying(true);
+  const stop=()=>{stoppedRef.current=true;speechRef.current?.cancel();setPlaying(false);setActiveBlock(null)};
+  const speakFromBlock=(blockIndex:number)=>{
+    const speech=speechRef.current,start=chunks.findIndex(chunk=>chunk.blockIndex>=blockIndex);
+    if(!speech||start<0)return;
+    speech.cancel();stoppedRef.current=false;chunkIndexRef.current=start;setPlaying(true);
     const next=()=>{
-      if(stoppedRef.current||indexRef.current>=sentences.length){setPlaying(false);if(!stoppedRef.current)setActive(null);return}
-      const index=indexRef.current,utterance=new SpeechSynthesisUtterance(sentences[index]);
+      if(stoppedRef.current||chunkIndexRef.current>=chunks.length){setPlaying(false);if(!stoppedRef.current)setActiveBlock(null);return;}
+      const chunk=chunks[chunkIndexRef.current],utterance=new SpeechSynthesisUtterance(chunk.text);
       utterance.lang='it-IT';utterance.rate=Number(rate);utterance.voice=voices.find(voice=>voice.voiceURI===voiceUri)||null;
-      utterance.onstart=()=>setActive(index);
-      utterance.onend=()=>{indexRef.current=index+1;next()};
-      utterance.onerror=()=>{if(!stoppedRef.current){setPlaying(false);setActive(null)}};
+      utterance.onstart=()=>setActiveBlock(chunk.blockIndex);
+      utterance.onend=()=>{chunkIndexRef.current+=1;next()};
+      utterance.onerror=()=>{if(!stoppedRef.current){setPlaying(false);setActiveBlock(null)}};
       speech.speak(utterance);
     };
     next();
   };
   const togglePause=()=>{const speech=speechRef.current;if(!speech)return;if(speech.paused){speech.resume();setPlaying(true)}else{speech.pause();setPlaying(false)}};
+  if(!blocks.length)return null;
 
-  if(!sentences.length)return null;
+  const italianVoices=voices.filter(voice=>voice.lang.toLowerCase().startsWith('it'));
   return <details className={`reading-experience reading-${mode}`}>
     <summary><span>{modeLabel}</span><small>{mode==='preview'?'Anteprima autorizzata dall’autore':'Riservato al tuo acquisto'}</small></summary>
     <div className="reading-toolbar">
-      <label>Capitolo<select value={chapter} onChange={event=>{stop();setChapter(event.target.value)}}>{chapters.map((item,index)=><option key={`${item.title}-${index}`} value={index}>{item.title}</option>)}</select></label>
-      <label>Voce<select value={voiceUri} onChange={event=>setVoiceUri(event.target.value)} disabled={!voices.length}>{voices.filter(voice=>voice.lang.toLowerCase().startsWith('it')).map(voice=><option key={voice.voiceURI} value={voice.voiceURI}>{voice.name}</option>)}{!voices.some(voice=>voice.lang.toLowerCase().startsWith('it'))&&<option value="">Voce italiana del dispositivo</option>}</select></label>
+      <label>Inizia da<select value={chapter} onChange={event=>{stop();setChapter(event.target.value)}}>{chapters.map((item,index)=><option key={`${item.title}-${index}`} value={index}>{item.title}</option>)}</select></label>
+      <label>Voce<select value={voiceUri} onChange={event=>setVoiceUri(event.target.value)} disabled={!voices.length}>{italianVoices.map(voice=><option key={voice.voiceURI} value={voice.voiceURI}>{voice.name}</option>)}{!italianVoices.length&&<option value="">Voce italiana del dispositivo</option>}</select></label>
       <label>Velocità<select value={rate} onChange={event=>setRate(event.target.value)}><option value="0.8">Lenta</option><option value="1">Normale</option><option value="1.15">Rapida</option></select></label>
-      <div className="reading-controls"><button type="button" onClick={()=>speakFrom(active??selectedStart)}>{playing?'Ricomincia qui':'Ascolta'}</button><button type="button" className="button alt" onClick={togglePause} disabled={active===null&&!playing}>{playing?'Pausa':'Riprendi'}</button><button type="button" className="button alt" onClick={stop}>Ferma</button></div>
+      <div className="reading-controls"><button type="button" onClick={()=>speakFromBlock(activeBlock??selectedBlock)}>{playing?'Ricomincia qui':'Ascolta'}</button><button type="button" className="button alt" onClick={togglePause} disabled={activeBlock===null&&!playing}>{playing?'Pausa':'Riprendi'}</button><button type="button" className="button alt" onClick={stop}>Ferma</button></div>
     </div>
-    <p className="reading-help">La voce è gratuita e utilizza il sintetizzatore italiano disponibile sul dispositivo. Il testo evidenziato indica il punto di lettura.</p>
-    <div className="reading-text" aria-live="polite">{sentences.map((sentence,index)=><span id={`reader-sentence-${mode}-${index}`} className={active===index?'is-reading':''} key={`${index}-${sentence.slice(0,12)}`}>{sentence} </span>)}</div>
+    <p className="reading-help">Il testo è organizzato in titoli e paragrafi. La voce legge blocchi naturali, mantenendo il punto evidenziato sul testo.</p>
+    <article className="reading-text" aria-label={`Testo di ${title}`}>{blocks.map((block,index)=>block.kind==='heading'?<h3 id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text}`}>{block.text}</h3>:<p id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text.slice(0,24)}`}>{block.text}</p>)}</article>
   </details>;
 }
