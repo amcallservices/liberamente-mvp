@@ -38,7 +38,7 @@ Il checkout accetta carta e PayPal tramite Stripe. Per ogni vendita non rimborsa
 
 ## Analisi editoriale assistita da AI
 
-Nel pannello amministratore è disponibile l'analisi facoltativa di un PDF già caricato: assegna una valutazione di completezza, coerenza e flusso logico, con punti di forza e criticità. È un supporto redazionale, non sostituisce il giudizio dell'amministrazione. Il manoscritto viene inviato al fornitore AI solo dopo il clic dell'amministratore. Per attivarla aggiungi in Vercel la variabile server-only `OPENAI_API_KEY` (e facoltativamente `OPENAI_MODEL`), quindi applica la migrazione `0013_ai_review_and_bank_payouts.sql` in Supabase.
+Nel pannello amministratore è disponibile l'analisi facoltativa di un PDF già caricato: assegna una valutazione di completezza, coerenza e flusso logico, con punti di forza e criticità. È un supporto redazionale, non sostituisce il giudizio dell'amministrazione. Il manoscritto viene inviato al fornitore AI solo dopo il clic dell'amministratore. Per contenere costi e tempi il valore predefinito è `gpt-4o-mini`, con un estratto massimo di 45.000 caratteri e un report breve. Per attivarla aggiungi in Vercel la variabile server-only `OPENAI_API_KEY` (e facoltativamente `OPENAI_MODEL`), quindi applica la migrazione `0013_ai_review_and_bank_payouts.sql` in Supabase.
 
 ## Email di revisione editoriale
 

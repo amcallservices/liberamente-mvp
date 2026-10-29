@@ -5,6 +5,7 @@ import {admin} from '@/lib/supabase/admin';
 import {notifyAuthorBookDecision} from '@/lib/notifications';
 import {revalidatePath} from 'next/cache';
 import {evaluateBookWithAi} from '@/lib/book-ai-review';
+import {extractEbookText} from '@/lib/reading-extraction';
 
 async function verifiedAdmin(){const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).maybeSingle();if(profile?.role!=='admin')redirect('/');return admin()}
 async function decideBook(bookId:string,status:'published'|'rejected'|'blocked',note:string){const db=await verifiedAdmin();const {data:book,error:bookError}=await db.from('books').select('author_id,title').eq('id',bookId).maybeSingle();if(bookError||!book)throw new Error('Libro non trovato.');const message=note.trim()||({published:'Libro approvato e pubblicato.',rejected:'Sono necessarie alcune correzioni prima della pubblicazione.',blocked:'Titolo bloccato dalla revisione editoriale.'}[status]);const {error}=await db.from('books').update({status,published_at:status==='published'?new Date().toISOString():null,moderation_note:status==='published'?null:message}).eq('id',bookId);if(error)throw new Error('Aggiornamento editoriale non riuscito.');const {error:noteError}=await db.from('book_review_notes').insert({book_id:bookId,author_id:book.author_id,actor:'admin',message});if(noteError)throw new Error('Decisione salvata, ma non è stato possibile registrare la nota di revisione.');const {data:{user:authorUser}}=await db.auth.admin.getUserById(book.author_id);await notifyAuthorBookDecision({email:authorUser?.email,title:book.title,status,note:message});redirect('/admin')}
@@ -19,16 +20,28 @@ export async function markAuthorRoyaltiesPaid(authorId:string,form:FormData){con
 export async function analyzeBookWithAi(bookId:string){
  const db=await verifiedAdmin();
  try{
-  const {data:book,error:bookError}=await db.from('books').select('id,title,subtitle,description').eq('id',bookId).maybeSingle();
+  const {data:book,error:bookError}=await db.from('books').select('id,author_id,title,subtitle,description,file_path,file_mime_type').eq('id',bookId).maybeSingle();
   if(bookError||!book)throw new Error('BOOK_NOT_FOUND');
-  const {data:content,error:contentError}=await db.from('book_reading_content').select('full_text').eq('book_id',bookId).maybeSingle();
-  if(contentError||!content?.full_text)throw new Error('TEXT_NOT_AVAILABLE');
+  let {data:content,error:contentError}=await db.from('book_reading_content').select('full_text').eq('book_id',bookId).maybeSingle();
+  if(contentError)throw new Error('READING_CONTENT_UNAVAILABLE');
+  if(!content?.full_text){
+   if(!book.file_path||book.file_mime_type!=='application/pdf')throw new Error('PDF_NOT_AVAILABLE');
+   const {data:file,error:fileError}=await db.storage.from('ebooks').download(book.file_path);
+   if(fileError||!file)throw new Error('PDF_DOWNLOAD_FAILED');
+   const extracted=await extractEbookText(Buffer.from(await file.arrayBuffer()),book.file_mime_type);
+   if(!extracted?.fullText)throw new Error('PDF_EXTRACTION_FAILED');
+   const {error:saveError}=await db.from('book_reading_content').upsert({book_id:book.id,author_id:book.author_id,full_text:extracted.fullText,preview_text:extracted.previewText},{onConflict:'book_id'});
+   if(saveError)throw new Error('TEXT_SAVE_FAILED');
+   content={full_text:extracted.fullText};
+  }
   const review=await evaluateBookWithAi({title:book.title,subtitle:book.subtitle,description:book.description,text:content.full_text});
   const {error:writeError}=await db.from('book_ai_reviews').upsert({book_id:book.id,...review,evaluated_at:new Date().toISOString()},{onConflict:'book_id'});
   if(writeError)throw writeError;
   revalidatePath('/admin');
  }catch(error){
   console.error('Analisi AI non disponibile',error);
+  const code=error instanceof Error?error.message:'UNKNOWN';
+  redirect(`/admin?ai=${encodeURIComponent(code)}`);
  }
  redirect('/admin');
 }
