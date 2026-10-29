@@ -61,10 +61,25 @@ export async function evaluateBookWithAi(input: {title: string; subtitle?: strin
     }),
   });
   if (!response.ok) throw new Error(`AI_REQUEST_${response.status}`);
-  const payload = await response.json() as {output_text?: string};
-  if (!payload.output_text) throw new Error('AI_EMPTY_RESPONSE');
+  const payload = await response.json() as {
+    output_text?: string;
+    output?: Array<{type?: string; content?: Array<{type?: string; text?: string}>}>;
+  };
+  // L'endpoint REST Responses restituisce il testo nel messaggio `output`;
+  // `output_text` è presente solo in alcune versioni del client SDK.
+  const outputText = payload.output_text || payload.output
+    ?.flatMap(message => message.content ?? [])
+    .filter(part => part.type === 'output_text' && typeof part.text === 'string')
+    .map(part => part.text as string)
+    .join('\n');
+  if (!outputText?.trim()) throw new Error('AI_EMPTY_RESPONSE');
 
-  const result = JSON.parse(payload.output_text) as Record<string, unknown>;
+  let result: Record<string, unknown>;
+  try {
+    result = JSON.parse(outputText) as Record<string, unknown>;
+  } catch {
+    throw new Error('AI_INVALID_RESPONSE');
+  }
   return {
     overall_score: score(result.overall_score, true),
     completeness_score: score(result.completeness_score),

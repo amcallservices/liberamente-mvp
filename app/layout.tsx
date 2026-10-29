@@ -27,7 +27,7 @@ export default async function Layout({children}:{children:React.ReactNode}) {
           <Link href="/autore">Area autori</Link>
           <a className="write-book-link" href="https://scrittoresite.streamlit.app/" target="_blank" rel="noopener noreferrer">Scrivi il tuo libro <span aria-hidden="true">↗</span></a>
           {isPrimaryAdmin&&<Link className="nav-login" href="/admin">Amministrazione</Link>}
-          {user?<><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
+          {user?<><a className="nav-assistance" href="https://wa.me/393282693777?text=Scrivo%20da%20Liberamente.site" target="_blank" rel="noopener noreferrer">ASSISTENZA</a><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
         </nav>
       </div>
       <div className="header-search-row">
