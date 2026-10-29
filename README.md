@@ -6,7 +6,7 @@ Marketplace italiano, solo ebook, costruito con Next.js (App Router), TypeScript
 
 - catalogo pubblico dei soli titoli approvati;
 - iscrizione email/password per lettori e attivazione del profilo autore;
-- bozza, upload EPUB/PDF in bucket privato e coda di moderazione;
+- bozza, upload PDF in bucket privato e coda di moderazione;
 - dashboard autore con royalty maturate e onboarding Stripe Express;
 - Checkout Stripe, webhook con firma verificata, acquisti idempotenti e libreria privata;
 - download autorizzato tramite URL Supabase firmato e valido 60 secondi.
@@ -34,7 +34,11 @@ update public.profiles set role = 'admin' where id = 'UUID-UTENTE';
 
 ## Pagamenti e royalty
 
-Il checkout accetta carta e PayPal tramite Stripe. Per ogni vendita non rimborsata, il ledger registra una royalty pari al 50% del prezzo incassato. Le somme diventano liquidabili dopo 60 giorni: l’amministrazione può registrare il pagamento nella sezione Compensi autori, con preferenza Stripe Connect o PayPal indicata dall’autore. Un rimborso annulla la royalty collegata. Prima di attivare pagamenti reali servono termini di vendita, procedura rimborsi, verifica fiscale/IVA e policy copyright.
+Il checkout accetta carta e PayPal tramite Stripe. Per ogni vendita non rimborsata, il ledger registra una royalty pari al 50% del prezzo incassato. Le somme diventano liquidabili dopo 30 giorni: l’amministrazione può registrare il pagamento nella sezione Compensi autori, con preferenza Stripe Connect, PayPal o bonifico indicata dall’autore. Un rimborso annulla la royalty collegata. Prima di attivare pagamenti reali servono termini di vendita, procedura rimborsi, verifica fiscale/IVA e policy copyright.
+
+## Analisi editoriale assistita da AI
+
+Nel pannello amministratore è disponibile l'analisi facoltativa di un PDF già caricato: assegna una valutazione di completezza, coerenza e flusso logico, con punti di forza e criticità. È un supporto redazionale, non sostituisce il giudizio dell'amministrazione. Il manoscritto viene inviato al fornitore AI solo dopo il clic dell'amministratore. Per attivarla aggiungi in Vercel la variabile server-only `OPENAI_API_KEY` (e facoltativamente `OPENAI_MODEL`), quindi applica la migrazione `0013_ai_review_and_bank_payouts.sql` in Supabase.
 
 ## Email di revisione editoriale
 

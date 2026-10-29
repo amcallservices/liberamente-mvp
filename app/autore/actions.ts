@@ -5,6 +5,7 @@ import {createClient} from '@/lib/supabase/server';
 import {notifyAdminBookSubmitted} from '@/lib/notifications';
 import {admin} from '@/lib/supabase/admin';
 import {extractEbookText} from '@/lib/reading-extraction';
+import {formatIban,isValidIban,normalizeIban} from '@/lib/iban';
 
 const schema=z.object({title:z.string().trim().min(2).max(180),subtitle:z.string().trim().max(220),description:z.string().trim().min(80).max(4000),categories:z.array(z.string().trim().min(2).max(80)).min(1).max(3),price:z.coerce.number().min(.99).max(99.99),rights:z.literal('on')});
 
@@ -33,4 +34,26 @@ export async function setBookPreview(form:FormData){
   if(error||(!content&&!enabled))redirect('/autore?errore=anteprima');
   redirect(`/autore?messaggio=${enabled?'Anteprima+gratuita+attivata+con+le+pagine+20-30.':'Anteprima+gratuita+disattivata.'}`);
 }
-export async function savePayoutSettings(form:FormData){const preference=String(form.get('payoutPreference')),paypal=String(form.get('paypalEmail')).trim(),s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');if(!['stripe','paypal'].includes(preference)||(preference==='paypal'&&!z.string().email().safeParse(paypal).success))redirect('/autore?errore=pagamento');const {error}=await s.from('profiles').update({payout_preference:preference,paypal_email:preference==='paypal'?paypal:null}).eq('id',user.id);if(error)redirect('/autore?errore=pagamento');redirect('/autore?messaggio=Preferenza+di+accredito+salvata.')}
+export async function savePayoutSettings(form:FormData){
+ const preference=String(form.get('payoutPreference')),
+  paypal=String(form.get('paypalEmail')).trim(),
+  iban=normalizeIban(String(form.get('iban')).trim()),
+  accountHolder=String(form.get('accountHolder')).trim(),
+  bankName=String(form.get('bankName')).trim(),
+  whatsapp=String(form.get('whatsapp')).trim(),
+  s=await createClient(),{data:{user}}=await s.auth.getUser();
+ if(!user)redirect('/accedi');
+ const paypalValid=z.string().email().safeParse(paypal).success;
+ const bankDetailsValid=isValidIban(iban)&&accountHolder.length>=3&&accountHolder.length<=160&&bankName.length>=2&&bankName.length<=160&&/^[+0-9][0-9 ()-]{6,24}$/.test(whatsapp);
+ if(!['stripe','paypal','bank_transfer'].includes(preference)||(preference==='paypal'&&!paypalValid)||(preference==='bank_transfer'&&!bankDetailsValid))redirect('/autore?errore=pagamento');
+ const {error}=await s.from('profiles').update({
+  payout_preference:preference,
+  paypal_email:preference==='paypal'?paypal:null,
+  payout_iban:preference==='bank_transfer'?formatIban(iban):null,
+  payout_account_holder:preference==='bank_transfer'?accountHolder:null,
+  payout_bank_name:preference==='bank_transfer'?bankName:null,
+  payout_whatsapp:preference==='bank_transfer'?whatsapp:null,
+ }).eq('id',user.id);
+ if(error)redirect('/autore?errore=pagamento');
+ redirect('/autore?messaggio=Preferenza+di+accredito+salvata.');
+}
