@@ -3,13 +3,15 @@ import {rankBooksForQuery} from '@/lib/book-search';
 import {coverUrl} from '@/lib/covers';
 import {BOOK_CATEGORIES} from '@/lib/categories';
 import {eur} from '@/lib/money';
-import {createClient} from '@/lib/supabase/server';
+import {admin} from '@/lib/supabase/admin';
 
 export default async function Catalog({searchParams}:{searchParams:Promise<{categoria?:string;q?:string;ordine?:string}>}){
   const {categoria,q:rawQuery,ordine:rawOrder}=await searchParams;
   const query=rawQuery?.trim()||'';
   const order=['popolari','recensiti','novita'].includes(rawOrder??'')?rawOrder!:'popolari';
-  const supabase=await createClient();
+  // Il catalogo viene letto anche senza login. Il client di servizio evita che
+  // le policy del profilo nascondano il solo nome pubblico dell'autore.
+  const supabase=admin();
   const [{data:publishedBooks},{data:statsRows}]=await Promise.all([
     supabase.from('books').select('id,title,subtitle,slug,description,category,categories,price_cents,cover_path,published_at,profiles!books_author_id_fkey(display_name)').eq('status','published').order('published_at',{ascending:false}).limit(500),
     supabase.from('book_discovery_stats').select('book_id,sales_count,review_count,average_rating'),

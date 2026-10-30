@@ -1,12 +1,14 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {rankBooksForQuery} from '@/lib/book-search';
 import {coverUrl} from '@/lib/covers';
-import {createClient} from '@/lib/supabase/server';
+import {admin} from '@/lib/supabase/admin';
 
 export async function GET(request:NextRequest){
   const query=request.nextUrl.searchParams.get('q')?.trim()??'';
   if(query.length<2)return NextResponse.json({suggestions:[]});
-  const supabase=await createClient();
+  // L'endpoint restituisce esclusivamente metadati pubblici dei titoli e il
+  // nome visualizzato dell'autore, anche ai visitatori non autenticati.
+  const supabase=admin();
   const {data,error}=await supabase.from('books').select('id,title,slug,subtitle,description,category,categories,cover_path,profiles!books_author_id_fkey(display_name)').eq('status','published').limit(250);
   if(error)return NextResponse.json({suggestions:[]},{status:200});
   const suggestions=rankBooksForQuery(data??[],query).slice(0,6).map(({book})=>{

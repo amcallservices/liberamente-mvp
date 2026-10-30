@@ -1,6 +1,5 @@
 import {notFound} from 'next/navigation';
 import type {Metadata} from 'next';
-import {createClient} from '@/lib/supabase/server';
 import {admin} from '@/lib/supabase/admin';
 import {eur} from '@/lib/money';
 import {coverUrl} from '@/lib/covers';
@@ -11,7 +10,7 @@ import {getPdfPageCount} from '@/lib/reading-extraction';
 const siteUrl='https://liberamente.site';
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
-  const {slug}=await params,s=await createClient();
+  const {slug}=await params,s=admin();
   const {data:book}=await s.from('books').select('title,subtitle,description,slug,cover_path,profiles!books_author_id_fkey(display_name)').eq('slug',slug).eq('status','published').maybeSingle();
   if(!book)return {title:'Ebook non trovato',robots:{index:false,follow:false}};
   const author=Array.isArray((book as any).profiles)?(book as any).profiles[0]:(book as any).profiles;
@@ -20,7 +19,9 @@ export async function generateMetadata({params}:{params:Promise<{slug:string}>})
 }
 
 export default async function BookPage({params}:{params:Promise<{slug:string}>}){
-  const {slug}=await params,s=await createClient();
+  // La scheda prodotto deve mostrare sempre l'autore, anche ai visitatori:
+  // tutte le query qui sotto selezionano solo dati destinati alla pagina pubblica.
+  const {slug}=await params,s=admin();
   const {data:book}=await s.from('books').select('*,profiles!books_author_id_fkey(display_name)').eq('slug',slug).eq('status','published').maybeSingle();
   if(!book)return notFound();
   // Recupero trasparente per i titoli pubblicati prima dell'introduzione del campo.
