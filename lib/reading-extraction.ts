@@ -6,7 +6,7 @@ const previewCharacters=26000;
 const previewFirstPage=20;
 const previewLastPage=30;
 const unavailablePreview='L’anteprima dalle pagine 20–30 non è disponibile perché questo ebook non raggiunge la pagina 20.';
-const parsePdf=pdf as unknown as (buffer:Buffer,options?:{max?:number;pagerender?:(pageData:any)=>Promise<string>})=>Promise<{text:string}>;
+const parsePdf=pdf as unknown as (buffer:Buffer,options?:{max?:number;pagerender?:(pageData:any)=>Promise<string>})=>Promise<{text:string;numpages?:number}>;
 const convertWordToHtml=mammoth as unknown as {convertToHtml:(input:{buffer:Buffer})=>Promise<{value:string}>};
 
 function clean(text:string){
@@ -53,6 +53,18 @@ async function extractPdfPages(buffer:Buffer,fromPage:number,toPage:number){
     return currentPage>=fromPage&&currentPage<=toPage?pageText:'';
   }});
   return clean(extracted.text);
+}
+
+/** Restituisce il numero di pagine dichiarato dal PDF, senza dipendere dal testo estraibile. */
+export async function getPdfPageCount(buffer:Buffer){
+  try{
+    const parsed=await parsePdf(buffer);
+    const count=Number(parsed.numpages);
+    return Number.isSafeInteger(count)&&count>0?count:null;
+  }catch(error){
+    console.error('Conteggio pagine PDF non riuscito',error);
+    return null;
+  }
 }
 
 export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
