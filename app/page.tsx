@@ -6,8 +6,11 @@ import {eur} from '@/lib/money';
 import {HomeDiscovery} from './home-discovery';
 import {BOOK_CATEGORY_GROUPS} from '@/lib/categories';
 import {marketplaceLocale,marketplacePath} from '@/lib/marketplace';
+import {seoLocale,storefrontMetadata} from '@/lib/seo';
 
-export const metadata:Metadata={title:'Ebook indipendenti italiani',description:'Scopri ebook italiani di autori indipendenti, acquistali in sicurezza e leggili nella tua libreria digitale.',alternates:{canonical:'/'},openGraph:{title:'Ebook indipendenti italiani | LIBERAMENTE.site',description:'Scopri storie indipendenti, acquista ebook italiani e sostieni gli autori che li hanno scritti.'}};
+export async function generateMetadata({searchParams}:{searchParams:Promise<{market?:string}>}):Promise<Metadata>{
+  return storefrontMetadata(seoLocale((await searchParams).market),'home');
+}
 
 export default async function Home({searchParams}:{searchParams:Promise<{market?:string}>}){
   const locale=marketplaceLocale((await searchParams).market),english=locale==='en',local=(path:string)=>marketplacePath(locale,path);

@@ -1,13 +1,11 @@
 import type {Metadata} from 'next';
 import Link from 'next/link';
 import {marketplaceLocale} from '@/lib/marketplace';
+import {seoLocale,storefrontMetadata} from '@/lib/seo';
 
-export const metadata:Metadata={
-  title:'Domande frequenti',
-  description:'Risposte per lettori e autori su acquisti, ebook, LIBERAMENTE Plus, royalty, pubblicazione e assistenza.',
-  alternates:{canonical:'/faq'},
-  openGraph:{title:'FAQ | LIBERAMENTE.site',description:'Tutto quello che serve per leggere, pubblicare e usare LIBERAMENTE Plus.'}
-};
+export async function generateMetadata({searchParams}:{searchParams:Promise<{market?:string}>}):Promise<Metadata>{
+  return storefrontMetadata(seoLocale((await searchParams).market),'faq');
+}
 
 type Question={question:string;answer:string};
 type Section={id:string;label:string;title:string;description:string;questions:Question[];link:{href:string;label:string}};
@@ -92,7 +90,7 @@ const englishSections:Section[]=[
   ],link:{href:'/en/accedi',label:'Sign in or create an account'}}
 ];
 
-const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:italianSections.flatMap(section=>section.questions.map(item=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}})))};
+const faqSchema=(sections:Section[])=>({'@context':'https://schema.org','@type':'FAQPage',mainEntity:sections.flatMap(section=>section.questions.map(item=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}})))});
 
 export default async function FaqPage({searchParams}:{searchParams:Promise<{market?:string}>}){
   const query=await searchParams;
@@ -113,6 +111,6 @@ export default async function FaqPage({searchParams}:{searchParams:Promise<{mark
         <div className="faq-items">{section.questions.map(item=><details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</div>
       </section>)}
     </section>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(faqSchema)}}/>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(faqSchema(sections))}}/>
   </main>;
 }

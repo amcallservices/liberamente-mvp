@@ -6,8 +6,11 @@ import {BOOK_CATEGORIES,categoryLabel} from '@/lib/categories';
 import {eur} from '@/lib/money';
 import {admin} from '@/lib/supabase/admin';
 import {marketplaceLocale,marketplacePath} from '@/lib/marketplace';
+import {seoLocale,storefrontMetadata} from '@/lib/seo';
 
-export const metadata:Metadata={title:'Catalogo ebook italiani',description:'Esplora il catalogo di ebook indipendenti italiani: narrativa, saggi, thriller, romance, crescita personale e molto altro.',alternates:{canonical:'/catalogo'},openGraph:{title:'Catalogo ebook indipendenti | LIBERAMENTE.site',description:'Trova la tua prossima lettura tra gli ebook di autori indipendenti italiani.'}};
+export async function generateMetadata({searchParams}:{searchParams:Promise<{market?:string}>}):Promise<Metadata>{
+  return storefrontMetadata(seoLocale((await searchParams).market),'catalogue');
+}
 
 export default async function Catalog({searchParams}:{searchParams:Promise<{categoria?:string;q?:string;ordine?:string;plus?:string;prezzo?:string;valutazione?:string;autore?:string;market?:string}>}){
   const {categoria,q:rawQuery,ordine:rawOrder,plus,prezzo,valutazione,autore:rawAuthor,market}=await searchParams;
