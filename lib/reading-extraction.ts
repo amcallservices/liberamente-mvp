@@ -55,6 +55,12 @@ async function extractPdfPages(buffer:Buffer,fromPage:number,toPage:number){
   return clean(extracted.text);
 }
 
+/** Estrae una sola pagina PDF per la lettura protetta di LIBERAMENTE Plus. */
+export async function extractPdfPage(buffer:Buffer,pageNumber:number){
+  const requestedPage=Math.max(1,Math.floor(pageNumber));
+  return extractPdfPages(buffer,requestedPage,requestedPage);
+}
+
 /** Restituisce il numero di pagine dichiarato dal PDF, senza dipendere dal testo estraibile. */
 export async function getPdfPageCount(buffer:Buffer){
   try{

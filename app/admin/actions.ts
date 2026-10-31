@@ -16,7 +16,26 @@ async function decideAPlus(blockId:string,status:'approved'|'rejected',note:stri
 export async function approveAPlusBlock(blockId:string){await decideAPlus(blockId,'approved','')}
 export async function rejectAPlusBlock(blockId:string,form:FormData){await decideAPlus(blockId,'rejected',String(form.get('note')??''))}
 export async function deleteAPlusBlockAsAdmin(blockId:string){const db=await verifiedAdmin();const {data:block,error:readError}=await db.from('book_a_plus_blocks').select('image_paths').eq('id',blockId).maybeSingle();if(readError||!block)throw new Error('Contenuto A+ non trovato.');if(block.image_paths?.length)await db.storage.from('a-plus').remove(block.image_paths);const {error}=await db.from('book_a_plus_blocks').delete().eq('id',blockId);if(error)throw new Error('Eliminazione del contenuto A+ non riuscita.');redirect('/admin')}
-export async function markAuthorRoyaltiesPaid(authorId:string,form:FormData){const date=String(form.get('paidOutDate')??'');if(!/^\d{4}-\d{2}-\d{2}$/.test(date))redirect('/admin');const db=await verifiedAdmin();const cutoff=new Date();cutoff.setUTCDate(cutoff.getUTCDate()-30);const {data:eligible,error:readError}=await db.from('royalty_ledger').select('id').eq('author_id',authorId).is('paid_out_at',null).is('reversed_at',null).lte('created_at',cutoff.toISOString());if(readError)throw new Error('Impossibile verificare le royalty.');const ids=(eligible??[]).map(row=>row.id);if(ids.length){const {error}=await db.from('royalty_ledger').update({paid_out_at:`${date}T12:00:00.000Z`}).in('id',ids);if(error)throw new Error('Impossibile registrare il pagamento.')}redirect('/admin')}
+export async function markAuthorRoyaltiesPaid(authorId:string,form:FormData){
+ const date=String(form.get('paidOutDate')??'');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date))redirect('/admin');
+ const db=await verifiedAdmin(),paidOutAt=`${date}T12:00:00.000Z`,cutoff=new Date();
+ cutoff.setUTCDate(cutoff.getUTCDate()-30);
+ const closedPlusPeriod=new Date(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),1)).toISOString().slice(0,10);
+ const [{data:eligible,error:ledgerError},{data:eligiblePlus,error:plusError}]=await Promise.all([
+  db.from('royalty_ledger').select('id').eq('author_id',authorId).is('paid_out_at',null).is('reversed_at',null).lte('created_at',cutoff.toISOString()),
+  db.from('plus_author_allocations').select('id').eq('author_id',authorId).is('paid_out_at',null).lt('period_start',closedPlusPeriod)
+ ]);
+ if(ledgerError||plusError)throw new Error('Impossibile verificare le royalty.');
+ const ids=(eligible??[]).map(row=>row.id),plusIds=(eligiblePlus??[]).map(row=>row.id);
+ const updates=[];
+ if(ids.length)updates.push(db.from('royalty_ledger').update({paid_out_at:paidOutAt}).in('id',ids));
+ if(plusIds.length)updates.push(db.from('plus_author_allocations').update({paid_out_at:paidOutAt}).in('id',plusIds));
+ const results=await Promise.all(updates);
+ if(results.some((result:any)=>result.error))throw new Error('Impossibile registrare il pagamento.');
+ revalidatePath('/admin');revalidatePath('/autore/report');
+ redirect('/admin');
+}
 export async function analyzeBookWithAi(bookId:string){
  const db=await verifiedAdmin();
  try{
