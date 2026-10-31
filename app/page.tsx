@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import type {Metadata} from 'next';
 import {admin} from '@/lib/supabase/admin';
 import {coverUrl} from '@/lib/covers';
 import {eur} from '@/lib/money';
 import {HomeDiscovery} from './home-discovery';
+
+export const metadata:Metadata={title:'Ebook indipendenti italiani',description:'Scopri ebook italiani di autori indipendenti, acquistali in sicurezza e leggili nella tua libreria digitale.',alternates:{canonical:'/'},openGraph:{title:'Ebook indipendenti italiani | LIBERAMENTE.site',description:'Scopri storie indipendenti, acquista ebook italiani e sostieni gli autori che li hanno scritti.'}};
 
 export default async function Home(){
   // La home è pubblica: usiamo il client server protetto per leggere soltanto

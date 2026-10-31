@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import type {Metadata} from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { isPlusActive } from '@/lib/plus';
+
+export const metadata:Metadata={title:'LIBERAMENTE Plus',description:'Con LIBERAMENTE Plus leggi online gli ebook aderenti al programma e sostieni gli autori in base alle pagine lette qualificate.',alternates:{canonical:'/plus'},openGraph:{title:'LIBERAMENTE Plus | Ebook da leggere online',description:'Un abbonamento mensile per leggere online gli ebook inclusi e sostenere gli autori indipendenti.'}};
 
 const notices: Record<string, string> = {
   configurazione: 'Il piano Plus non è ancora pronto. Riprova tra poco.',

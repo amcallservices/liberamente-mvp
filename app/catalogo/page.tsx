@@ -1,9 +1,12 @@
 import Link from 'next/link';
+import type {Metadata} from 'next';
 import {rankBooksForQuery} from '@/lib/book-search';
 import {coverUrl} from '@/lib/covers';
 import {BOOK_CATEGORIES} from '@/lib/categories';
 import {eur} from '@/lib/money';
 import {admin} from '@/lib/supabase/admin';
+
+export const metadata:Metadata={title:'Catalogo ebook italiani',description:'Esplora il catalogo di ebook indipendenti italiani: narrativa, saggi, thriller, romance, crescita personale e molto altro.',alternates:{canonical:'/catalogo'},openGraph:{title:'Catalogo ebook indipendenti | LIBERAMENTE.site',description:'Trova la tua prossima lettura tra gli ebook di autori indipendenti italiani.'}};
 
 export default async function Catalog({searchParams}:{searchParams:Promise<{categoria?:string;q?:string;ordine?:string;plus?:string}>}){
   const {categoria,q:rawQuery,ordine:rawOrder,plus}=await searchParams;
