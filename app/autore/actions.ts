@@ -79,3 +79,14 @@ export async function savePayoutSettings(form:FormData){
  if(error)redirect('/autore?errore=pagamento');
  redirect('/autore?messaggio=Preferenza+di+accredito+salvata.');
 }
+
+export async function setBookPlusEnabled(form:FormData){
+ const bookId=String(form.get('bookId')??''),enabled=String(form.get('enabled')??'')==='true';
+ const s=await createClient(),{data:{user}}=await s.auth.getUser();
+ if(!user)redirect('/accedi');
+ const {data:book}=await s.from('books').select('id,status').eq('id',bookId).eq('author_id',user.id).maybeSingle();
+ if(!book||book.status!=='published')redirect('/autore?errore=plus');
+ const {error}=await s.from('books').update({plus_enabled:enabled,plus_enabled_at:enabled?new Date().toISOString():null}).eq('id',bookId).eq('author_id',user.id);
+ if(error)redirect('/autore?errore=plus');
+ redirect(`/autore?messaggio=${encodeURIComponent(enabled?'Libro incluso in LIBERAMENTE Plus.':'Libro rimosso da LIBERAMENTE Plus.')}`);
+}

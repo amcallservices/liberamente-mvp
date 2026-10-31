@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {readerBlocksFromText,speechChunksFromBlocks,type ReaderBlock} from '@/lib/reader-format';
 
-type Props={title:string;text:string;mode:'preview'|'full';purchaseId?:string;fileMimeType?:string|null};
+type Props={title:string;text:string;mode:'preview'|'full';purchaseId?:string;fileMimeType?:string|null;plusBookId?:string};
 type Chapter={title:string;blockIndex:number};
 
 function chaptersFor(blocks:ReaderBlock[]):Chapter[]{
@@ -13,7 +13,7 @@ function chaptersFor(blocks:ReaderBlock[]):Chapter[]{
   return chapters;
 }
 
-export function ReadingExperience({title,text,mode,purchaseId,fileMimeType}:Props){
+export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusBookId}:Props){
   const blocks=useMemo(()=>readerBlocksFromText(text),[text]);
   const chunks=useMemo(()=>speechChunksFromBlocks(blocks),[blocks]);
   const chapters=useMemo(()=>chaptersFor(blocks),[blocks]);
@@ -38,6 +38,7 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType}:Prop
     const speech=speechRef.current,start=chunks.findIndex(chunk=>chunk.blockIndex>=blockIndex);
     if(!speech||start<0)return;
     speech.cancel();stoppedRef.current=false;chunkIndexRef.current=start;setPlaying(true);
+    if(plusBookId)void fetch('/api/plus/reading-event',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({bookId:plusBookId,block:blockIndex,seconds:60})});
     const next=()=>{
       if(stoppedRef.current||chunkIndexRef.current>=chunks.length){setPlaying(false);if(!stoppedRef.current)setActiveBlock(null);return;}
       const chunk=chunks[chunkIndexRef.current],utterance=new SpeechSynthesisUtterance(chunk.text);

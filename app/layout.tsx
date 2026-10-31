@@ -4,6 +4,7 @@ import './palette.css';
 import './storefront.css';
 import './brand.css';
 import './search.css';
+import './plus.css';
 import './lettore/reading.css';
 import Link from 'next/link';
 import type {Metadata} from 'next';
@@ -23,8 +24,10 @@ export default async function Layout({children}:{children:React.ReactNode}) {
         <Link className="brand" href="/">LIBERAMENTE.site <span>– lo store di Scrittore.site</span></Link>
         <nav>
           <Link href="/catalogo">Catalogo</Link>
+          <Link href="/plus">LIBERAMENTE Plus</Link>
           <Link href="/lettore">Area lettori</Link>
           <Link href="/autore">Area autori</Link>
+          {user&&<Link href="/autore/plus">Plus autori</Link>}
           <a className="write-book-link" href="https://scrittoresite.streamlit.app/" target="_blank" rel="noopener noreferrer">Scrivi il tuo libro <span aria-hidden="true">↗</span></a>
           {isPrimaryAdmin&&<Link className="nav-login" href="/admin">Amministrazione</Link>}
           {user?<><a className="nav-assistance" href="https://wa.me/393282693777?text=Scrivo%20da%20Liberamente.site" target="_blank" rel="noopener noreferrer">ASSISTENZA</a><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
