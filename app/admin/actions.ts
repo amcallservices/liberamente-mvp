@@ -50,9 +50,12 @@ export async function deleteBookAsAdmin(bookId:string){const db=await verifiedAd
 export async function setBookPlusEnabledAsAdmin(bookId:string,enabled:boolean){
  const db=await verifiedAdmin();
  const {data:book,error:readError}=await db.from('books').select('id,status').eq('id',bookId).maybeSingle();
- if(readError||!book||book.status!=='published')throw new Error('Solo i titoli pubblicati possono aderire a LIBERAMENTE Plus.');
+ if(readError||!book||book.status!=='published')redirect('/admin/plus?errore=solo_pubblicati');
  const {error}=await db.from('books').update({plus_enabled:enabled,plus_enabled_at:enabled?new Date().toISOString():null}).eq('id',bookId);
- if(error)throw new Error('Aggiornamento del titolo Plus non riuscito.');
+ if(error){
+  console.error('Aggiornamento Plus non riuscito',error);
+  redirect('/admin/plus?errore=salvataggio');
+ }
  revalidatePath('/admin');revalidatePath('/admin/plus');revalidatePath('/autore/plus');revalidatePath('/catalogo');revalidatePath('/plus');revalidatePath('/lettore/plus');
- redirect('/admin/plus');
+ redirect(`/admin/plus?messaggio=${enabled?'Titolo+incluso+in+LIBERAMENTE+Plus.':'Titolo+rimosso+da+LIBERAMENTE+Plus.'}`);
 }

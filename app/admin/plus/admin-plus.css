@@ -20,5 +20,6 @@
 .plus-subscription-list>div{display:flex;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #edf0ed}
 .plus-subscription-list>div:last-child{border:0}
 .plus-subscription-list span{color:var(--muted);font-size:.9rem}
+.subscription-reader{display:grid;gap:.16rem}.subscription-reader .subscription-email{color:var(--green);font-weight:750;font-size:.9rem}.subscription-reader small{color:var(--muted);font-size:.78rem}.error-notice{background:#fff1f1;color:#9b1c25;border-color:#f3c7cb}
 .empty{color:var(--muted);margin:1rem 0 0}
 @media(max-width:720px){.plus-admin-head{display:block}.plus-admin-head .button{margin-top:1rem}.plus-admin-metrics{grid-template-columns:1fr}.plus-admin-book{grid-template-columns:44px minmax(0,1fr)}.plus-admin-book img,.plus-admin-cover{width:44px;height:62px}.plus-admin-book form{grid-column:1/-1}.plus-subscription-list>div{display:block}.plus-subscription-list span{display:block;margin-top:.25rem}}

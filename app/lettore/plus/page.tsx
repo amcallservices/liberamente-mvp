@@ -4,6 +4,7 @@ import {createClient} from '@/lib/supabase/server';
 import {admin} from '@/lib/supabase/admin';
 import {isPlusActive} from '@/lib/plus';
 import {ReadingExperience} from '../reading-experience';
+import {coverUrl} from '@/lib/covers';
 
 export default async function PlusLibrary(){
   const s=await createClient();
@@ -12,9 +13,9 @@ export default async function PlusLibrary(){
   const {data:subscription}=await s.from('plus_subscriptions').select('status,current_period_end').eq('reader_id',user.id).maybeSingle();
   if(!isPlusActive(subscription?.status))return <main className="wrap plus-library"><p className="eyebrow">Area lettori</p><h1>LIBERAMENTE Plus</h1><p>Per leggere i titoli inclusi serve un abbonamento Plus attivo.</p><Link className="button" href="/plus">Scopri LIBERAMENTE Plus</Link></main>;
   const db=admin();
-  const {data:books}=await db.from('books').select('id,title,subtitle,cover_path').eq('status','published').eq('plus_enabled',true).order('updated_at',{ascending:false});
+  const {data:books}=await db.from('books').select('id,title,subtitle,slug,cover_path').eq('status','published').eq('plus_enabled',true).order('updated_at',{ascending:false});
   const ids=(books??[]).map((book:any)=>book.id);
   const {data:contents}=ids.length?await db.from('book_reading_content').select('book_id,full_text').in('book_id',ids):{data:[]};
   const contentByBook=new Map((contents??[]).map((content:any)=>[content.book_id,content.full_text]));
-  return <main className="wrap plus-library"><p className="eyebrow">La tua libreria Plus</p><h1>Leggi i titoli inclusi</h1><p className="muted">Abbonamento attivo. La prossima scadenza è {subscription?.current_period_end?new Intl.DateTimeFormat('it-IT',{dateStyle:'long'}).format(new Date(subscription.current_period_end)):'in aggiornamento'}.</p><div className="plus-reading-list">{(books??[]).map((book:any)=>{const text=contentByBook.get(book.id);return <article className="plus-reading-book" key={book.id}><h2>{book.title}</h2>{book.subtitle&&<p>{book.subtitle}</p>}{text?<ReadingExperience title={book.title} text={text} mode="full"/>:<p className="muted">Il testo di lettura sarà disponibile a breve.</p>}</article>})}</div>{!books?.length&&<p className="empty">Stiamo preparando i primi titoli Plus.</p>}</main>;
+  return <main className="wrap plus-library"><p className="eyebrow">La tua libreria Plus</p><h1>Leggi i titoli inclusi</h1><p className="muted">Abbonamento attivo. La prossima scadenza è {subscription?.current_period_end?new Intl.DateTimeFormat('it-IT',{dateStyle:'long'}).format(new Date(subscription.current_period_end)):'in aggiornamento'}.</p><div className="plus-reading-list">{(books??[]).map((book:any)=>{const text=contentByBook.get(book.id),cover=coverUrl(book.cover_path);return <article className="plus-reading-book" key={book.id}><div className="plus-book-intro">{cover?<img className="plus-book-cover" src={cover} alt={`Copertina di ${book.title}`}/>:<div className="plus-book-cover placeholder-cover">Copertina</div>}<div><p className="status">Incluso in Plus</p><h2>{book.title}</h2>{book.subtitle&&<p>{book.subtitle}</p>}<Link className="text-link" href={`/ebook/${book.slug}`}>Vedi la scheda del libro</Link></div></div>{text?<ReadingExperience title={book.title} text={text} mode="full"/>:<p className="muted">Il testo di lettura sarà disponibile a breve.</p>}</article>})}</div>{!books?.length&&<div className="empty"><h2>Nessun titolo Plus disponibile</h2><p>Gli ebook inclusi nel programma appariranno qui non appena un autore aderisce e la redazione li pubblica.</p><Link className="button alt" href="/catalogo">Vai al catalogo</Link></div>}</main>;
 }

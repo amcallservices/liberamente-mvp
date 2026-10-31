@@ -6,6 +6,7 @@ import './brand.css';
 import './search.css';
 import './plus.css';
 import './admin/plus/admin-plus.css';
+import './autore/report/report.css';
 import './lettore/reading.css';
 import Link from 'next/link';
 import type {Metadata} from 'next';
@@ -16,7 +17,9 @@ export const metadata:Metadata={metadataBase:new URL(siteUrl),title:{default:'LI
 export default async function Layout({children}:{children:React.ReactNode}) {
   const s=await createClient();
   const {data:{user}}=await s.auth.getUser();
-  const isPrimaryAdmin=user?.email==='stramantonio@gmail.com'&&(await s.from('profiles').select('role').eq('id',user.id).maybeSingle()).data?.role==='admin';
+  const {data:sessionProfile}=user?await s.from('profiles').select('role').eq('id',user.id).maybeSingle():{data:null};
+  const isPrimaryAdmin=user?.email==='stramantonio@gmail.com'&&sessionProfile?.role==='admin';
+  const hasAuthorArea=Boolean(user&&sessionProfile?.role&&sessionProfile.role!=='reader');
   const structuredData={'@context':'https://schema.org','@graph':[{'@type':'Organization',name:'LIBERAMENTE.site',url:siteUrl,description:'Marketplace italiano di ebook indipendenti, lo store di Scrittore.site.'},{'@type':'WebSite',name:'LIBERAMENTE.site',url:siteUrl,inLanguage:'it-IT',potentialAction:{'@type':'SearchAction',target:`${siteUrl}/catalogo?q={search_term_string}`,'query-input':'required name=search_term_string'}}]};
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structuredData)}}/>
@@ -28,7 +31,7 @@ export default async function Layout({children}:{children:React.ReactNode}) {
           <Link href="/plus">LIBERAMENTE Plus</Link>
           <Link href="/lettore">Area lettori</Link>
           <Link href="/autore">Area autori</Link>
-          {user&&<Link href="/autore/plus">Plus autori</Link>}
+          {hasAuthorArea&&<><Link href="/autore/plus">Plus autori</Link><Link href="/autore/report">Report autori</Link></>}
           <a className="write-book-link" href="https://scrittoresite.streamlit.app/" target="_blank" rel="noopener noreferrer">Scrivi il tuo libro <span aria-hidden="true">↗</span></a>
           {isPrimaryAdmin&&<><Link className="nav-login" href="/admin">Amministrazione</Link><Link className="nav-login" href="/admin/plus">Gestione Plus</Link></>}
           {user?<><a className="nav-assistance" href="https://wa.me/393282693777?text=Scrivo%20da%20Liberamente.site" target="_blank" rel="noopener noreferrer">ASSISTENZA</a><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
