@@ -1,0 +1,27 @@
+import Link from 'next/link';
+import {redirect} from 'next/navigation';
+import {createClient} from '@/lib/supabase/server';
+import {admin} from '@/lib/supabase/admin';
+import {coverUrl} from '@/lib/covers';
+import {setBookPlusEnabledAsAdmin} from '../actions';
+
+function subscriptionLabel(status:string){return ({active:'Attivo',trialing:'In prova',past_due:'Pagamento da verificare',canceled:'Annullato',unpaid:'Non pagato',incomplete:'Incompleto',inactive:'Non attivo'} as Record<string,string>)[status]||status}
+
+export default async function AdminPlusPage(){
+ const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');
+ const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).maybeSingle();if(profile?.role!=='admin')redirect('/');
+ const db=admin();
+ const [{data:books},{data:subscriptions},{data:events}]=await Promise.all([
+  db.from('books').select('id,title,cover_path,plus_enabled,plus_enabled_at,profiles!books_author_id_fkey(display_name,email)').eq('status','published').order('updated_at',{ascending:false}),
+  db.from('plus_subscriptions').select('id,status,current_period_end').order('updated_at',{ascending:false}),
+  db.from('plus_reading_events').select('book_id,seconds_spent').gte('occurred_at',new Date(new Date().getFullYear(),new Date().getMonth(),1).toISOString())
+ ]);
+ const secondsByBook=new Map<string,number>();for(const event of events??[])secondsByBook.set(event.book_id,(secondsByBook.get(event.book_id)||0)+Number(event.seconds_spent||0));
+ const active=(subscriptions??[]).filter(item=>item.status==='active'||item.status==='trialing').length;const included=(books??[]).filter(book=>book.plus_enabled).length;
+ return <main className="wrap plus-admin-page">
+  <div className="plus-admin-head"><div><p className="eyebrow">Amministrazione · LIBERAMENTE Plus</p><h1>Catalogo e abbonamenti Plus</h1><p className="plus-lead">Decidi quali ebook pubblicati entrano nel programma. Le vendite singole restano sempre attive.</p></div><Link className="button alt" href="/admin">← Pannello editoriale</Link></div>
+  <section className="plus-admin-metrics" aria-label="Riepilogo Plus"><article><strong>{active}</strong><span>abbonamenti attivi</span></article><article><strong>{included}</strong><span>titoli inclusi</span></article><article><strong>{Math.round((events??[]).reduce((sum,event)=>sum+Number(event.seconds_spent||0),0)/60)}</strong><span>minuti letti nel mese</span></article></section>
+  <section className="plus-admin-section"><div><h2>Libri pubblicati</h2><p>Usa il pulsante per includere o rimuovere un titolo da LIBERAMENTE Plus.</p></div><div className="plus-admin-book-list">{(books??[]).map((book:any)=>{const author=Array.isArray(book.profiles)?book.profiles[0]:book.profiles;const minutes=Math.round((secondsByBook.get(book.id)||0)/60);return <article className="plus-admin-book" key={book.id}>{book.cover_path?<img src={coverUrl(book.cover_path)||''} alt=""/>:<div className="plus-admin-cover"/>}<div className="plus-admin-book-copy"><h3>{book.title}</h3><p>{author?.display_name||author?.email||'Autore non disponibile'}</p><small>{book.plus_enabled?'Incluso in Plus':'Non incluso'} · {minutes} min letti questo mese</small></div><form action={setBookPlusEnabledAsAdmin.bind(null,book.id,!book.plus_enabled)}><button className={book.plus_enabled?'button alt':'button'}>{book.plus_enabled?'Rimuovi da Plus':'Includi in Plus'}</button></form></article>})}</div>{!books?.length&&<p className="empty">Non ci sono ancora libri pubblicati.</p>}</section>
+  <section className="plus-admin-section"><h2>Abbonamenti</h2><div className="plus-subscription-list">{(subscriptions??[]).map((subscription:any)=><div key={subscription.id}><strong>{subscriptionLabel(subscription.status)}</strong><span>{subscription.current_period_end?`Rinnovo/fine periodo: ${new Date(subscription.current_period_end).toLocaleDateString('it-IT')}`:'Periodo non ancora disponibile'}</span></div>)}</div>{!subscriptions?.length&&<p className="empty">Nessun abbonamento Plus registrato.</p>}</section>
+ </main>
+}

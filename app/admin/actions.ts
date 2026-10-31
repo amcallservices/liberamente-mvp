@@ -46,3 +46,13 @@ export async function analyzeBookWithAi(bookId:string){
  redirect('/admin');
 }
 export async function deleteBookAsAdmin(bookId:string){const db=await verifiedAdmin();const {data:book,error:bookReadError}=await db.from('books').select('file_path,cover_path').eq('id',bookId).maybeSingle();if(bookReadError||!book)throw new Error('Libro non trovato.');const {data:aPlusBlocks}=await db.from('book_a_plus_blocks').select('image_paths').eq('book_id',bookId);const aPlusPaths=(aPlusBlocks??[]).flatMap((block:any)=>block.image_paths??[]);if(aPlusPaths.length)await db.storage.from('a-plus').remove(aPlusPaths);const {data:purchases,error:purchaseReadError}=await db.from('purchases').select('id').eq('book_id',bookId);if(purchaseReadError)throw new Error('Impossibile verificare gli acquisti collegati.');const purchaseIds=(purchases??[]).map(purchase=>purchase.id);if(purchaseIds.length){const {error:royaltyError}=await db.from('royalty_ledger').delete().in('purchase_id',purchaseIds);if(royaltyError)throw new Error('Impossibile eliminare le royalty collegate.');const {error:purchaseError}=await db.from('purchases').delete().eq('book_id',bookId);if(purchaseError)throw new Error('Impossibile eliminare gli acquisti collegati.');}if(book.file_path)await db.storage.from('ebooks').remove([book.file_path]);if(book.cover_path)await db.storage.from('covers').remove([book.cover_path]);const {error}=await db.from('books').delete().eq('id',bookId);if(error)throw new Error('Eliminazione non riuscita');redirect('/admin')}
+
+export async function setBookPlusEnabledAsAdmin(bookId:string,enabled:boolean){
+ const db=await verifiedAdmin();
+ const {data:book,error:readError}=await db.from('books').select('id,status').eq('id',bookId).maybeSingle();
+ if(readError||!book||book.status!=='published')throw new Error('Solo i titoli pubblicati possono aderire a LIBERAMENTE Plus.');
+ const {error}=await db.from('books').update({plus_enabled:enabled,plus_enabled_at:enabled?new Date().toISOString():null}).eq('id',bookId);
+ if(error)throw new Error('Aggiornamento del titolo Plus non riuscito.');
+ revalidatePath('/admin');revalidatePath('/admin/plus');revalidatePath('/autore/plus');revalidatePath('/catalogo');revalidatePath('/plus');revalidatePath('/lettore/plus');
+ redirect('/admin/plus');
+}

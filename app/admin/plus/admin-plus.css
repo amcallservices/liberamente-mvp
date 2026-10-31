@@ -1,0 +1,24 @@
+.plus-admin-page{padding-block:3.25rem 5rem}
+.plus-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;border-bottom:1px solid var(--line);padding-bottom:1.75rem;margin-bottom:1.5rem}
+.plus-admin-head h1{margin:.25rem 0 .6rem;font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-.045em}
+.plus-lead{max-width:650px;margin:0;color:var(--muted);font-size:1.05rem}
+.plus-admin-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:2rem}
+.plus-admin-metrics article{background:#fff;border:1px solid var(--line);border-radius:18px;padding:1.25rem;box-shadow:0 10px 25px rgba(28,52,44,.05)}
+.plus-admin-metrics strong{display:block;font-family:Georgia,serif;font-size:2.25rem;color:var(--green)}
+.plus-admin-metrics span{color:var(--muted);font-size:.9rem}
+.plus-admin-section{background:#fff;border:1px solid var(--line);border-radius:20px;padding:1.5rem;margin-top:1.25rem}
+.plus-admin-section h2{margin:0 0 .4rem;font-size:1.45rem}
+.plus-admin-section>div>p{color:var(--muted);margin:.1rem 0 1.25rem}
+.plus-admin-book-list{display:grid;gap:.75rem}
+.plus-admin-book{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:1rem;padding:.85rem;border:1px solid #e3e9e4;border-radius:14px;background:#fdfefd}
+.plus-admin-book img,.plus-admin-cover{width:54px;height:75px;border-radius:7px;object-fit:cover;background:#eef2ed}
+.plus-admin-book h3{margin:0 0 .18rem;font-size:1rem}
+.plus-admin-book p,.plus-admin-book small{margin:0;color:var(--muted)}
+.plus-admin-book small{font-size:.8rem}
+.plus-admin-book form{margin:0}
+.plus-subscription-list{display:grid;gap:.6rem}
+.plus-subscription-list>div{display:flex;justify-content:space-between;gap:1rem;padding:.8rem 0;border-bottom:1px solid #edf0ed}
+.plus-subscription-list>div:last-child{border:0}
+.plus-subscription-list span{color:var(--muted);font-size:.9rem}
+.empty{color:var(--muted);margin:1rem 0 0}
+@media(max-width:720px){.plus-admin-head{display:block}.plus-admin-head .button{margin-top:1rem}.plus-admin-metrics{grid-template-columns:1fr}.plus-admin-book{grid-template-columns:44px minmax(0,1fr)}.plus-admin-book img,.plus-admin-cover{width:44px;height:62px}.plus-admin-book form{grid-column:1/-1}.plus-subscription-list>div{display:block}.plus-subscription-list span{display:block;margin-top:.25rem}}
