@@ -37,7 +37,11 @@ export function BookAssets({bookId,hasManuscript,hasCover,status}:Props){
       });
       const result=await saved.json();
       if(!saved.ok)throw new Error(result.error);
-      setMessage(`${kind==='cover'?'Copertina':'PDF del libro'} caricato. Aggiorna la pagina per vederne lo stato.`);
+      if(kind==='manuscript'){
+        setMessage(result.readingReady
+          ?'PDF caricato e verificato: il testo è leggibile per anteprima e lettura online. Aggiorna la pagina per attivare l’anteprima.'
+          :`PDF caricato, ma non è leggibile per anteprima e lettura online: ${result.readingWarning??'non contiene testo selezionabile.'} Il file resta salvato; ricarica un PDF esportato dal documento originale con testo selezionabile.`);
+      }else setMessage('Copertina caricata. Aggiorna la pagina per vederne lo stato.');
     }catch(error){
       setMessage(error instanceof Error?error.message:'Errore di caricamento.');
     }finally{

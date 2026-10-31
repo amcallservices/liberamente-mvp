@@ -1,29 +1,17 @@
-import mammoth from 'mammoth';
 import pdf from 'pdf-parse';
 import {markReaderText,normaliseReaderText} from '@/lib/reader-format';
 
-const previewCharacters=26000;
 const previewFirstPage=20;
 const previewLastPage=30;
 const unavailablePreview='L’anteprima dalle pagine 20–30 non è disponibile perché questo ebook non raggiunge la pagina 20.';
 const parsePdf=pdf as unknown as (buffer:Buffer,options?:{max?:number;pagerender?:(pageData:any)=>Promise<string>})=>Promise<{text:string;numpages?:number}>;
-const convertWordToHtml=mammoth as unknown as {convertToHtml:(input:{buffer:Buffer})=>Promise<{value:string}>};
+
+export type EbookTextAnalysis=
+  | {ok:true;fullText:string;previewText:string}
+  | {ok:false;reason:'not_pdf'|'unreadable'|'too_short'};
 
 function clean(text:string){
   return normaliseReaderText(text).replace(/[ \t]{2,}/g,' ');
-}
-
-function decodeHtml(value:string){
-  return value.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-}
-
-function htmlToReaderText(html:string){
-  return clean(decodeHtml(html)
-    .replace(/<h[1-6][^>]*>/gi,'\n\n# ')
-    .replace(/<\/(h[1-6]|p|div|blockquote|ul|ol)[^>]*>/gi,'\n\n')
-    .replace(/<li[^>]*>/gi,'\n• ')
-    .replace(/<br\s*\/?>(\r?\n)?/gi,'\n')
-    .replace(/<[^>]+>/g,''));
 }
 
 async function renderPdfPage(pageData:any){
@@ -73,23 +61,34 @@ export async function getPdfPageCount(buffer:Buffer){
   }
 }
 
-export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
+function isPdfDocument(buffer:Buffer,mimeType?:string|null){
+  return mimeType==='application/pdf'||buffer.subarray(0,5).toString('ascii')==='%PDF-';
+}
+
+/**
+ * Analizza un PDF appena caricato. Un file può essere un PDF valido ma non
+ * leggibile dal lettore web: tipicamente è una scansione composta da immagini.
+ */
+export async function analyzeEbookText(buffer:Buffer,mimeType?:string|null):Promise<EbookTextAnalysis>{
+  if(!isPdfDocument(buffer,mimeType))return {ok:false,reason:'not_pdf'};
   try{
-    const isPdf=mimeType==='application/pdf';
-    const raw=isPdf
-      ?(await parsePdf(buffer,{pagerender:renderPdfPage})).text
-      :htmlToReaderText((await convertWordToHtml.convertToHtml({buffer})).value);
+    const raw=(await parsePdf(buffer,{pagerender:renderPdfPage})).text;
     const fullText=clean(raw);
-    if(fullText.length<80)return null;
+    if(!fullText.length)return {ok:false,reason:'unreadable'};
+    if(fullText.length<80)return {ok:false,reason:'too_short'};
     // L'estratto pubblico è sempre composto dalle pagine 20–30 del PDF.
     // Per libri più brevi salviamo un avviso leggibile anziché un estratto vuoto.
-    const extractedPreview=isPdf
-      ?await extractPdfPages(buffer,previewFirstPage,previewLastPage)
-      :fullText.slice(0,previewCharacters);
+    const extractedPreview=await extractPdfPages(buffer,previewFirstPage,previewLastPage);
     const previewText=extractedPreview.length>=80?extractedPreview:unavailablePreview;
-    return {fullText:markReaderText(fullText),previewText:markReaderText(previewText)};
+    return {ok:true,fullText:markReaderText(fullText),previewText:markReaderText(previewText)};
   }catch(error){
     console.error('Estrazione testo ebook non riuscita',error);
-    return null;
+    return {ok:false,reason:'unreadable'};
   }
+}
+
+/** Compatibilità con i processi già presenti che richiedono soltanto il testo. */
+export async function extractEbookText(buffer:Buffer,mimeType?:string|null){
+  const result=await analyzeEbookText(buffer,mimeType);
+  return result.ok?{fullText:result.fullText,previewText:result.previewText}:null;
 }
