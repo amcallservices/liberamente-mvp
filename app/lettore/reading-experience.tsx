@@ -26,7 +26,7 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
   useEffect(()=>{
     if(!('speechSynthesis' in window))return;
     const speech=window.speechSynthesis;speechRef.current=speech;
-    const load=()=>{const available=speech.getVoices();setVoices(available);const italian=available.find(voice=>voice.lang.toLowerCase().startsWith('it'));setVoiceUri(current=>current||italian?.voiceURI||available[0]?.voiceURI||'')};
+    const load=()=>{const available=speech.getVoices();setVoices(available);const preferred=available.find(voice=>voice.lang.toLowerCase().startsWith('it'))??available.find(voice=>voice.lang.toLowerCase().startsWith('en'));setVoiceUri(current=>current&&available.some(voice=>voice.voiceURI===current)?current:(preferred?.voiceURI||available[0]?.voiceURI||''))};
     load();speech.addEventListener('voiceschanged',load);
     return()=>{speech.removeEventListener('voiceschanged',load);speech.cancel()};
   },[]);
@@ -42,7 +42,8 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
     const next=()=>{
       if(stoppedRef.current||chunkIndexRef.current>=chunks.length){setPlaying(false);if(!stoppedRef.current)setActiveBlock(null);return;}
       const chunk=chunks[chunkIndexRef.current],utterance=new SpeechSynthesisUtterance(chunk.text);
-      utterance.lang='it-IT';utterance.rate=Number(rate);utterance.voice=voices.find(voice=>voice.voiceURI===voiceUri)||null;
+      const selectedVoice=voices.find(voice=>voice.voiceURI===voiceUri)||null;
+      utterance.lang=selectedVoice?.lang||'it-IT';utterance.rate=Number(rate);utterance.voice=selectedVoice;
       utterance.onstart=()=>setActiveBlock(chunk.blockIndex);
       utterance.onend=()=>{chunkIndexRef.current+=1;next()};
       utterance.onerror=()=>{if(!stoppedRef.current){setPlaying(false);setActiveBlock(null)}};
@@ -61,11 +62,12 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
   if(!blocks.length)return null;
 
   const italianVoices=voices.filter(voice=>voice.lang.toLowerCase().startsWith('it'));
+  const englishVoices=voices.filter(voice=>voice.lang.toLowerCase().startsWith('en'));
   return <details className={`reading-experience reading-${mode}`}>
     <summary><span>{modeLabel}</span><small>{mode==='preview'?'Anteprima autorizzata dall’autore':'Riservato al tuo acquisto'}</small></summary>
     <div className="reading-toolbar">
       <label>Inizia l’ascolto da<select value={chapter} onChange={event=>{stop();setChapter(event.target.value)}}>{chapters.map((item,index)=><option key={`${item.title}-${index}`} value={index}>{item.title}</option>)}</select></label>
-      <label>Voce<select value={voiceUri} onChange={event=>setVoiceUri(event.target.value)} disabled={!voices.length}>{italianVoices.map(voice=><option key={voice.voiceURI} value={voice.voiceURI}>{voice.name}</option>)}{!italianVoices.length&&<option value="">Voce italiana del dispositivo</option>}</select></label>
+      <label>Voce<select value={voiceUri} onChange={event=>setVoiceUri(event.target.value)} disabled={!voices.length}>{italianVoices.length>0&&<optgroup label="Italiano">{italianVoices.map(voice=><option key={voice.voiceURI} value={voice.voiceURI}>{voice.name} ({voice.lang})</option>)}</optgroup>}{englishVoices.length>0&&<optgroup label="English">{englishVoices.map(voice=><option key={voice.voiceURI} value={voice.voiceURI}>{voice.name} ({voice.lang})</option>)}</optgroup>}{!italianVoices.length&&!englishVoices.length&&<option value="">Voce del dispositivo</option>}</select></label>
       <label>Velocità<select value={rate} onChange={event=>setRate(event.target.value)}><option value="0.8">Lenta</option><option value="1">Normale</option><option value="1.15">Rapida</option></select></label>
       <div className="reading-controls"><button type="button" onClick={()=>speakFromBlock(selectedBlock)}>Ascolta da qui</button><button type="button" className="button alt" onClick={togglePause} disabled={activeBlock===null&&!playing}>{playing?'Pausa':'Riprendi'}</button><button type="button" className="button alt" onClick={stop}>Ferma</button></div>
     </div>

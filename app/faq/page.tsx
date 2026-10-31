@@ -1,5 +1,6 @@
 import type {Metadata} from 'next';
 import Link from 'next/link';
+import {marketplaceLocale} from '@/lib/marketplace';
 
 export const metadata:Metadata={
   title:'Domande frequenti',
@@ -11,7 +12,7 @@ export const metadata:Metadata={
 type Question={question:string;answer:string};
 type Section={id:string;label:string;title:string;description:string;questions:Question[];link:{href:string;label:string}};
 
-const sections:Section[]=[
+const italianSections:Section[]=[
   {
     id:'lettori',label:'Per chi legge',title:'Leggere e acquistare',
     description:'Informazioni su acquisti, libreria personale, anteprime e recensioni.',
@@ -62,15 +63,47 @@ const sections:Section[]=[
   }
 ];
 
-const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:sections.flatMap(section=>section.questions.map(item=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}})))};
+const englishSections:Section[]=[
+  {id:'readers',label:'For readers',title:'Reading and buying',description:'Information about purchases, your library, previews and reviews.',questions:[
+    {question:'What is LIBERAMENTE.site?',answer:'LIBERAMENTE.site is the Scrittore.site store for ebooks by independent authors. Discover titles, buy securely and find them in your reader area.'},
+    {question:'How do I buy an ebook?',answer:'Choose a book from the catalogue, open its page and select Buy. Payments are handled securely by Stripe.'},
+    {question:'Where are my purchased books?',answer:'After a confirmed payment, the ebook appears in your Reader area, where you can read online and download the purchased file where available.'},
+    {question:'Can I read an excerpt before buying?',answer:'Yes, when the author enables a preview. You will find the excerpt button on the book page.'},
+    {question:'Who can write a review?',answer:'Only readers who genuinely purchased the ebook can review it from their Reader area.'}
+  ],link:{href:'/en/catalogo',label:'Explore the catalogue'}},
+  {id:'plus',label:'LIBERAMENTE Plus',title:'One subscription, many ebooks',description:'How the monthly reading programme works.',questions:[
+    {question:'What is LIBERAMENTE Plus?',answer:'LIBERAMENTE Plus is the monthly subscription that gives online access to ebooks included in the Plus programme, without purchasing each title separately.'},
+    {question:'Can I download or print Plus books?',answer:'No. Plus titles are read online in sequence and are not available for download or printing through the subscription.'},
+    {question:'How are read pages counted?',answer:'Reading is registered when the reader confirms each page. The service remembers your place for the next visit.'},
+    {question:'How are authors paid?',answer:'A share of the Plus fund is assigned according to qualified pages read. Authors receive 60% of the planned fund and LIBERAMENTE retains 40% to run the service.'},
+    {question:'How can I manage or cancel Plus?',answer:'Open Plus management from your account to access the secure Stripe portal and update payment details or cancel renewal.'}
+  ],link:{href:'/en/plus',label:'Discover LIBERAMENTE Plus'}},
+  {id:'authors',label:'For authors',title:'Publish with LIBERAMENTE',description:'The editorial workflow, royalties and payout options for authors.',questions:[
+    {question:'How do I submit my ebook?',answer:'From the Author area, create the book record, upload the PDF manuscript, cover and requested material, complete the book information and submit it for review.'},
+    {question:'What happens after submission?',answer:'The administration reviews your book and can publish it, request corrections or block it. Review notes remain available in your Author area.'},
+    {question:'Can I edit or delete my book?',answer:'Yes. In the Author area you can edit books according to their status or delete them. Changes to a published title go back into review before becoming public.'},
+    {question:'What is the royalty on individual sales?',answer:'For individual sales, authors receive 50% of the sale price before any applicable taxes.'},
+    {question:'When are royalties paid?',answer:'Royalties that are at least 30 days old and not refunded become available for payout. The Author report shows sales, Plus reading and earnings.'}
+  ],link:{href:'/en/autore',label:'Open the Author area'}},
+  {id:'security',label:'Security and support',title:'Account, payments and support',description:'Essential answers to use the service safely.',questions:[
+    {question:'Are payments secure?',answer:'Yes. LIBERAMENTE.site uses Stripe to process payments. Your card details are not handled directly by the store.'},
+    {question:'How do I access my account?',answer:'Create an account or sign in from the Sign in page. If required, confirm your email address using the message you receive.'},
+    {question:'How do I get support?',answer:'Registered users can use the ASSISTENZA button in the menu to open a dedicated WhatsApp conversation.'}
+  ],link:{href:'/en/accedi',label:'Sign in or create an account'}}
+];
 
-export default function FaqPage(){
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:italianSections.flatMap(section=>section.questions.map(item=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}})))};
+
+export default async function FaqPage({searchParams}:{searchParams:Promise<{market?:string}>}){
+  const query=await searchParams;
+  const english=marketplaceLocale(query.market)==='en';
+  const sections=english?englishSections:italianSections;
   return <main className="faq-page">
     <section className="faq-hero">
       <div className="wrap faq-hero-inner">
         <p className="faq-kicker">LIBERAMENTE.site</p>
-        <h1>Domande frequenti</h1>
-        <p>Tutto quello che serve per leggere, pubblicare e usare LIBERAMENTE Plus in modo semplice e consapevole.</p>
+        <h1>{english?'Frequently asked questions':'Domande frequenti'}</h1>
+        <p>{english?'Everything you need to read, publish and use LIBERAMENTE Plus simply and confidently.':'Tutto quello che serve per leggere, pubblicare e usare LIBERAMENTE Plus in modo semplice e consapevole.'}</p>
         <nav className="faq-jump-nav" aria-label="Argomenti FAQ">{sections.map(section=><a key={section.id} href={`#${section.id}`}>{section.label}</a>)}</nav>
       </div>
     </section>
