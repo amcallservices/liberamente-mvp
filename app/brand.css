@@ -29,6 +29,34 @@ header .brand:focus-visible {
   opacity: .82;
 }
 
+header .language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--green) 35%, white);
+  border-radius: 999px;
+  background: #fff;
+}
+
+header .language-switcher a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+header .language-switcher a.active-language {
+  color: #fff;
+  background: var(--green);
+}
+
 @media (max-width: 900px) {
   header .brand {
     min-width: 206px;

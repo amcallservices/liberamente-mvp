@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import {useEffect, useId, useState} from 'react';
+import {marketplacePath, type MarketplaceLocale} from '@/lib/marketplace';
 
 type Suggestion={id:string;title:string;slug:string;author:string;category:string;coverUrl:string|null};
 
-export function SmartSearch({className,defaultValue='',category}:{className?:string;defaultValue?:string;category?:string}){
+export function SmartSearch({className,defaultValue='',category,locale='it'}:{className?:string;defaultValue?:string;category?:string;locale?:MarketplaceLocale}){
   const [query,setQuery]=useState(defaultValue);
   const [suggestions,setSuggestions]=useState<Suggestion[]>([]);
   const [open,setOpen]=useState(false);
@@ -17,7 +18,7 @@ export function SmartSearch({className,defaultValue='',category}:{className?:str
     const controller=new AbortController();
     const timer=window.setTimeout(async()=>{
       try{
-        const response=await fetch(`/api/search-suggestions?q=${encodeURIComponent(value)}`,{signal:controller.signal});
+        const response=await fetch(`/api/search-suggestions?q=${encodeURIComponent(value)}&market=${locale}`,{signal:controller.signal});
         if(!response.ok)return;
         const data=await response.json() as {suggestions?:Suggestion[]};
         setSuggestions(data.suggestions??[]);
@@ -29,18 +30,19 @@ export function SmartSearch({className,defaultValue='',category}:{className?:str
     return()=>{window.clearTimeout(timer);controller.abort();};
   },[query]);
 
-  return <form className={className} action="/catalogo" role="search" onSubmit={()=>setOpen(false)}>
-    <label className="sr-only" htmlFor={inputId}>Cerca nel catalogo</label>
-    <input id={inputId} name="q" value={query} onChange={event=>setQuery(event.target.value)} onFocus={()=>query.trim().length>=2&&setOpen(true)} placeholder="Cerca per tema, autore o titolo" autoComplete="off" aria-autocomplete="list" aria-expanded={open}/>
+  const english=locale==='en';
+  return <form className={className} action={marketplacePath(locale,'/catalogo')} role="search" onSubmit={()=>setOpen(false)}>
+    <label className="sr-only" htmlFor={inputId}>{english?'Search the catalogue':'Cerca nel catalogo'}</label>
+    <input id={inputId} name="q" value={query} onChange={event=>setQuery(event.target.value)} onFocus={()=>query.trim().length>=2&&setOpen(true)} placeholder={english?'Search by topic, author or title':'Cerca per tema, autore o titolo'} autoComplete="off" aria-autocomplete="list" aria-expanded={open}/>
     {category&&<input type="hidden" name="categoria" value={category}/>} 
     <button type="submit">Cerca</button>
     {open&&suggestions.length>0&&<div className="search-suggestions" aria-label="Ebook suggeriti">
-      <p>Libri pertinenti</p>
-      {suggestions.map(book=><Link key={book.id} href={`/ebook/${book.slug}`} onClick={()=>setOpen(false)}>
+      <p>{english?'Relevant books':'Libri pertinenti'}</p>
+      {suggestions.map(book=><Link key={book.id} href={marketplacePath(locale,`/ebook/${book.slug}`)} onClick={()=>setOpen(false)}>
         {book.coverUrl?<img src={book.coverUrl} alt=""/>:<span className="search-cover-placeholder"/>}
-        <span><strong>{book.title}</strong><small>di {book.author} · {book.category}</small></span>
+        <span><strong>{book.title}</strong><small>{english?'by':'di'} {book.author} · {book.category}</small></span>
       </Link>)}
-      <button type="submit" className="show-all-results">Vedi tutti i risultati per “{query}”</button>
+      <button type="submit" className="show-all-results">{english?'See all results for':'Vedi tutti i risultati per'} “{query}”</button>
     </div>}
   </form>;
 }

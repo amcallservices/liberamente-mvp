@@ -5,17 +5,19 @@ import { coverUrl } from '@/lib/covers';
 import { isPlusActive } from '@/lib/plus';
 import { createClient } from '@/lib/supabase/server';
 import { PdfPageReader } from './pdf-page-reader';
+import {marketplaceLocale,marketplacePath} from '@/lib/marketplace';
 
-export default async function PlusLibrary({ searchParams }: { searchParams: Promise<{ libro?: string; categoria?: string }> }) {
+export default async function PlusLibrary({ searchParams }: { searchParams: Promise<{ libro?: string; categoria?: string; market?:string }> }) {
   const query = await searchParams;
+  const locale=marketplaceLocale(query.market),english=locale==='en',local=(path:string)=>marketplacePath(locale,path);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/accedi');
+  if (!user) redirect(local('/accedi'));
   const { data: subscription } = await supabase.from('plus_subscriptions').select('id,status,current_period_end').eq('reader_id', user.id).maybeSingle();
-  if (!isPlusActive(subscription?.status)) return <main className="wrap plus-library"><p className="eyebrow">Area lettori</p><h1>LIBERAMENTE Plus</h1><p>Per leggere i titoli inclusi serve un abbonamento Plus attivo.</p><Link className="button" href="/plus">Scopri LIBERAMENTE Plus</Link></main>;
+  if (!isPlusActive(subscription?.status)) return <main className="wrap plus-library"><p className="eyebrow">{english?'Reader area':'Area lettori'}</p><h1>LIBERAMENTE Plus</h1><p>{english?'An active Plus subscription is required to read included titles.':'Per leggere i titoli inclusi serve un abbonamento Plus attivo.'}</p><Link className="button" href={local('/plus')}>{english?'Discover LIBERAMENTE Plus':'Scopri LIBERAMENTE Plus'}</Link></main>;
 
   const db = admin();
-  const { data: books } = await db.from('books').select('id,title,subtitle,slug,category,cover_path,file_path,file_mime_type,page_count').eq('status', 'published').eq('plus_enabled', true).order('updated_at', { ascending: false });
+  const { data: books } = await db.from('books').select('id,title,subtitle,slug,category,cover_path,file_path,file_mime_type,page_count').eq('status', 'published').eq('plus_enabled', true).eq('marketplace_locale',locale).order('updated_at', { ascending: false });
   const bookIds = (books ?? []).map((book: any) => book.id);
   const now = new Date();
   const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
@@ -37,24 +39,24 @@ export default async function PlusLibrary({ searchParams }: { searchParams: Prom
       const cover = coverUrl(selectedBook.cover_path);
       const hasProtectedPdf = Boolean(selectedBook.file_path && selectedBook.file_mime_type === 'application/pdf');
       return <article className="plus-reading-book plus-reading-book--active">
-        <div className="plus-reader-heading"><Link className="button alt" href={selectedCategory ? `/lettore/plus?categoria=${encodeURIComponent(selectedCategory)}` : '/lettore/plus'}>← Cambia libro</Link><Link className="text-link" href={`/ebook/${selectedBook.slug}`}>Vedi la scheda del libro</Link></div>
+        <div className="plus-reader-heading"><Link className="button alt" href={selectedCategory ? local(`/lettore/plus?categoria=${encodeURIComponent(selectedCategory)}`) : local('/lettore/plus')}>← {english?'Choose another book':'Cambia libro'}</Link><Link className="text-link" href={local(`/ebook/${selectedBook.slug}`)}>{english?'View book page':'Vedi la scheda del libro'}</Link></div>
         <div className="plus-book-intro">{cover ? <img className="plus-book-cover" src={cover} alt={`Copertina di ${selectedBook.title}`} /> : <div className="plus-book-cover placeholder-cover">Copertina</div>}<div><p className="status">Stai leggendo</p><h2>{selectedBook.title}</h2>{selectedBook.subtitle && <p>{selectedBook.subtitle}</p>}</div></div>
         {hasProtectedPdf ? <PdfPageReader bookId={selectedBook.id} title={selectedBook.title} totalPages={Math.max(1, Number(selectedBook.page_count) || 1)} confirmedPages={readsByBook.get(selectedBook.id) ?? []} /> : <p className="muted">Il file di lettura protetta sarà disponibile a breve.</p>}
       </article>;
     })() : <section className="plus-title-picker" aria-label="Scegli un titolo Plus">
       <div className="plus-title-picker__heading"><div><h2>Scegli un libro da leggere</h2><p>Apri un solo titolo alla volta: potrai sempre tornare qui e continuare un altro ebook.</p></div><span>{books?.length ?? 0} titoli disponibili</span></div>
-      {categories.length > 0 && <nav className="plus-category-filter" aria-label="Filtra i titoli Plus per categoria"><span>Esplora per categoria</span><div><Link className={`plus-category-filter__link${!selectedCategory ? ' is-active' : ''}`} href="/lettore/plus">Tutti</Link>{categories.map((category) => <Link key={category} className={`plus-category-filter__link${selectedCategory === category ? ' is-active' : ''}`} href={`/lettore/plus?categoria=${encodeURIComponent(category)}`}>{category}</Link>)}</div></nav>}
+      {categories.length > 0 && <nav className="plus-category-filter" aria-label="Filter Plus titles by category"><span>{english?'Browse by category':'Esplora per categoria'}</span><div><Link className={`plus-category-filter__link${!selectedCategory ? ' is-active' : ''}`} href={local('/lettore/plus')}>{english?'All':'Tutti'}</Link>{categories.map((category) => <Link key={category} className={`plus-category-filter__link${selectedCategory === category ? ' is-active' : ''}`} href={local(`/lettore/plus?categoria=${encodeURIComponent(category)}`)}>{category}</Link>)}</div></nav>}
       <div className="plus-title-picker__grid">{visibleBooks.map((book: any) => {
         const cover = coverUrl(book.cover_path);
         const pagesRead = readsByBook.get(book.id)?.length ?? 0;
         const totalPages = Math.max(1, Number(book.page_count) || 1);
         return <article className="plus-title-card" key={book.id}>
           {cover ? <img className="plus-title-card__cover" src={cover} alt={`Copertina di ${book.title}`} /> : <div className="plus-title-card__cover placeholder-cover">Copertina</div>}
-          <div className="plus-title-card__body"><p className="status">Incluso in Plus</p><h3>{book.title}</h3>{book.category && <p className="plus-title-card__category">{book.category}</p>}{book.subtitle && <p className="muted">{book.subtitle}</p>}<p className="plus-title-card__progress">{pagesRead > 0 ? `${pagesRead} di ${totalPages} pagine confermate` : `Pronto da leggere · ${totalPages} pagine`}</p><Link className="button" href={`/lettore/plus?libro=${encodeURIComponent(book.id)}`}>{pagesRead > 0 ? 'Riprendi la lettura' : 'Inizia a leggere'}</Link></div>
+          <div className="plus-title-card__body"><p className="status">{english?'Included in Plus':'Incluso in Plus'}</p><h3>{book.title}</h3>{book.category && <p className="plus-title-card__category">{book.category}</p>}{book.subtitle && <p className="muted">{book.subtitle}</p>}<p className="plus-title-card__progress">{pagesRead > 0 ? (english?`${pagesRead} of ${totalPages} pages confirmed`:`${pagesRead} di ${totalPages} pagine confermate`) : (english?`Ready to read · ${totalPages} pages`:`Pronto da leggere · ${totalPages} pagine`)}</p><Link className="button" href={local(`/lettore/plus?libro=${encodeURIComponent(book.id)}`)}>{pagesRead > 0 ? (english?'Resume reading':'Riprendi la lettura') : (english?'Start reading':'Inizia a leggere')}</Link></div>
         </article>;
       })}</div>
-      {!visibleBooks.length && books?.length ? <div className="empty plus-filter-empty"><h3>Nessun titolo in questa categoria</h3><p>Prova a scegliere un&apos;altra categoria per trovare un ebook incluso in Plus.</p><Link className="button alt" href="/lettore/plus">Mostra tutti i titoli</Link></div> : null}
+      {!visibleBooks.length && books?.length ? <div className="empty plus-filter-empty"><h3>{english?'No titles in this category':'Nessun titolo in questa categoria'}</h3><p>{english?'Try another category to find an ebook included in Plus.':'Prova a scegliere un&apos;altra categoria per trovare un ebook incluso in Plus.'}</p><Link className="button alt" href={local('/lettore/plus')}>{english?'Show all titles':'Mostra tutti i titoli'}</Link></div> : null}
     </section>}
-    {!books?.length && <div className="empty"><h2>Nessun titolo Plus disponibile</h2><p>Gli ebook inclusi nel programma appariranno qui non appena un autore aderisce e la redazione li pubblica.</p><Link className="button alt" href="/catalogo">Vai al catalogo</Link></div>}
+    {!books?.length && <div className="empty"><h2>{english?'No Plus titles available':'Nessun titolo Plus disponibile'}</h2><p>{english?'Included ebooks will appear here as soon as an author joins and the editorial team publishes them.':'Gli ebook inclusi nel programma appariranno qui non appena un autore aderisce e la redazione li pubblica.'}</p><Link className="button alt" href={local('/catalogo')}>{english?'Go to catalogue':'Vai al catalogo'}</Link></div>}
   </main>;
 }

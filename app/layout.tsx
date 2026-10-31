@@ -9,10 +9,10 @@ import './admin/plus/admin-plus.css';
 import './autore/report/report.css';
 import './lettore/reading.css';
 import './faq/faq.css';
-import Link from 'next/link';
 import type {Metadata} from 'next';
 import {createClient} from '@/lib/supabase/server';
-import {SmartSearch} from '@/components/smart-search';
+import {SiteHeader} from '@/components/site-header';
+import {SiteFooter} from '@/components/site-footer';
 const siteUrl='https://liberamente.site';
 export const metadata:Metadata={metadataBase:new URL(siteUrl),title:{default:'LIBERAMENTE.site | Lo store di Scrittore.site',template:'%s | LIBERAMENTE.site'},description:'Scopri e acquista ebook di autori indipendenti italiani. LIBERAMENTE.site è lo store di Scrittore.site per lettori e autori.',applicationName:'LIBERAMENTE.site',keywords:['ebook italiani','ebook indipendenti','libri digitali','libri online italiani','autori indipendenti','pubblicare ebook','Scrittore.site','store ebook'],authors:[{name:'LIBERAMENTE.site'}],creator:'LIBERAMENTE.site',publisher:'LIBERAMENTE.site',alternates:{canonical:'/'},icons:{icon:[{url:'/favicon.png',type:'image/png'}],apple:'/favicon.png'},openGraph:{type:'website',locale:'it_IT',url:siteUrl,siteName:'LIBERAMENTE.site',title:'LIBERAMENTE.site – lo store di Scrittore.site',description:'Ebook indipendenti italiani: scopri, acquista e leggi le storie di nuovi autori.',images:[{url:'/liberamente-logo.png',alt:'Logo LIBERAMENTE.site'}]},twitter:{card:'summary_large_image',title:'LIBERAMENTE.site – lo store di Scrittore.site',description:'Ebook indipendenti italiani da scoprire e leggere.',images:['/liberamente-logo.png']},robots:{index:true,follow:true,googleBot:{index:true,follow:true,'max-image-preview':'large','max-snippet':-1,'max-video-preview':-1}}};
 export default async function Layout({children}:{children:React.ReactNode}) {
@@ -24,26 +24,8 @@ export default async function Layout({children}:{children:React.ReactNode}) {
   const structuredData={'@context':'https://schema.org','@graph':[{'@type':'Organization',name:'LIBERAMENTE.site',url:siteUrl,logo:`${siteUrl}/liberamente-logo.png`,description:'Marketplace italiano di ebook indipendenti, lo store di Scrittore.site.',areaServed:'IT',inLanguage:'it-IT'},{'@type':'WebSite',name:'LIBERAMENTE.site',alternateName:'LIBERAMENTE',url:siteUrl,inLanguage:'it-IT',publisher:{'@type':'Organization',name:'LIBERAMENTE.site'},potentialAction:{'@type':'SearchAction',target:`${siteUrl}/catalogo?q={search_term_string}`,'query-input':'required name=search_term_string'}}]};
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structuredData)}}/>
-    <header>
-      <div className="header-top">
-        <Link className="brand" href="/">LIBERAMENTE.site <span>– lo store di Scrittore.site</span></Link>
-        <nav>
-          <Link href="/catalogo">Catalogo</Link>
-          <Link href="/faq">FAQ</Link>
-          <Link href="/plus">LIBERAMENTE Plus</Link>
-          <Link href="/lettore">Area lettori</Link>
-          <Link href="/autore">Area autori</Link>
-          {hasAuthorArea&&<><Link href="/autore/plus">Plus autori</Link><Link href="/autore/report">Report autori</Link></>}
-          <a className="write-book-link" href="https://scrittoresite.streamlit.app/" target="_blank" rel="noopener noreferrer">Scrivi il tuo libro <span aria-hidden="true">↗</span></a>
-          {isPrimaryAdmin&&<><Link className="nav-login" href="/admin">Amministrazione</Link><Link className="nav-login" href="/admin/plus">Gestione Plus</Link></>}
-          {user?<><a className="nav-assistance" href="https://wa.me/393282693777?text=Scrivo%20da%20Liberamente.site" target="_blank" rel="noopener noreferrer">ASSISTENZA</a><Link className="nav-login" href="/profilo">Profilo</Link><form action="/api/auth/signout" method="POST"><button className="nav-button">Esci</button></form></>:<Link className="nav-login" href="/accedi">Accedi</Link>}
-        </nav>
-      </div>
-      <div className="header-search-row">
-        <SmartSearch className="header-search" />
-      </div>
-    </header>
+    <SiteHeader signedIn={Boolean(user)} isPrimaryAdmin={isPrimaryAdmin} hasAuthorArea={hasAuthorArea}/>
     {children}
-    <footer><div className="wrap footer-content"><p><strong>LIBERAMENTE.site – lo store di Scrittore.site</strong> · una casa per ebook indipendenti. Pagamenti sicuri, download protetti.</p><Link href="/faq">Domande frequenti</Link></div></footer>
+    <SiteFooter/>
   </>;
 }
