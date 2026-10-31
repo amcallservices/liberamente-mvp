@@ -8,6 +8,7 @@ import './plus.css';
 import './admin/plus/admin-plus.css';
 import './autore/report/report.css';
 import './lettore/reading.css';
+import './faq/faq.css';
 import Link from 'next/link';
 import type {Metadata} from 'next';
 import {createClient} from '@/lib/supabase/server';
@@ -28,6 +29,7 @@ export default async function Layout({children}:{children:React.ReactNode}) {
         <Link className="brand" href="/">LIBERAMENTE.site <span>– lo store di Scrittore.site</span></Link>
         <nav>
           <Link href="/catalogo">Catalogo</Link>
+          <Link href="/faq">FAQ</Link>
           <Link href="/plus">LIBERAMENTE Plus</Link>
           <Link href="/lettore">Area lettori</Link>
           <Link href="/autore">Area autori</Link>
@@ -42,6 +44,6 @@ export default async function Layout({children}:{children:React.ReactNode}) {
       </div>
     </header>
     {children}
-    <footer><div className="wrap"><strong>LIBERAMENTE.site – lo store di Scrittore.site</strong> · una casa per ebook indipendenti. Pagamenti sicuri, download protetti.</div></footer>
+    <footer><div className="wrap footer-content"><p><strong>LIBERAMENTE.site – lo store di Scrittore.site</strong> · una casa per ebook indipendenti. Pagamenti sicuri, download protetti.</p><Link href="/faq">Domande frequenti</Link></div></footer>
   </>;
 }
