@@ -34,15 +34,15 @@ export default async function Plus({ searchParams }: { searchParams: Promise<{ e
       <div className="plus-actions plus-actions-visible" aria-label="Azioni LIBERAMENTE Plus">
         {active ? <>
           <span className="plus-active-label">✓ Abbonamento Plus attivo</span>
-          <Link className="button" href="/lettore/plus">Esplora i titoli Plus</Link>
+          <Link className="button plus-explore-cta" href="/lettore/plus">Esplora i titoli Plus</Link>
           <form action="/api/plus/portal" method="POST"><button className="button alt">Gestisci abbonamento</button></form>
         </> : user ? <>
           <form action="/api/plus/checkout" method="POST"><button className="button">Attiva LIBERAMENTE Plus</button></form>
-          <Link className="button alt" href="/catalogo?plus=1">Esplora i titoli Plus</Link>
+          <Link className="button plus-explore-cta" href="/catalogo?plus=1">Esplora i titoli Plus</Link>
           <Link className="plus-manage-hint" href="/plus?errore=abbonamento">Gestisci abbonamento</Link>
         </> : <>
           <Link className="button" href="/accedi?next=/plus">Attiva LIBERAMENTE Plus</Link>
-          <Link className="button alt" href="/catalogo?plus=1">Esplora i titoli Plus</Link>
+          <Link className="button plus-explore-cta" href="/catalogo?plus=1">Esplora i titoli Plus</Link>
           <Link className="plus-manage-hint" href="/accedi?next=/plus">Gestisci abbonamento</Link>
         </>}
       </div>
