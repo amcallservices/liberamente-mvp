@@ -16,7 +16,7 @@ export default async function AdminPlusPage({ searchParams }: { searchParams: Pr
   const [{ data: books }, { data: subscriptions }, { data: pageReads }] = await Promise.all([
     db.from('books').select('id,title,cover_path,plus_enabled,plus_enabled_at,profiles!books_author_id_fkey(display_name,email)').eq('status', 'published').order('updated_at', { ascending: false }),
     db.from('plus_subscriptions').select('id,reader_id,status,current_period_end,cancel_at_period_end').order('updated_at', { ascending: false }),
-    db.from('plus_page_reads').select('book_id,reader_id,page_number').eq('period_start', periodStart),
+    db.from('plus_page_qualifications').select('book_id,reader_id,page_number').eq('qualified_month', periodStart),
   ]);
   const readerIds = [...new Set((subscriptions ?? []).map((subscription: any) => subscription.reader_id).filter(Boolean))];
   const { data: readers } = readerIds.length ? await db.from('profiles').select('id,email,display_name').in('id', readerIds) : { data: [] as any[] };
