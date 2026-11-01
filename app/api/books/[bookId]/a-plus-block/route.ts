@@ -16,9 +16,9 @@ export async function DELETE(req:Request,{params}:{params:Promise<{bookId:string
  if(body.imagePath){
   const imageIndex=block.image_paths?.indexOf(body.imagePath)??-1;
   if(imageIndex<0)return NextResponse.json({error:'Immagine A+ non trovata.'},{status:404});
-  const remainingPaths=(block.image_paths??[]).filter((_,index)=>index!==imageIndex);
+  const remainingPaths=(block.image_paths??[]).filter((_:string,index:number)=>index!==imageIndex);
   if(remainingPaths.length){
-   const remainingTitles=(block.image_titles??[]).filter((_,index)=>index!==imageIndex);
+   const remainingTitles=(block.image_titles??[]).filter((_:string,index:number)=>index!==imageIndex);
    const {error}=await db.from('book_a_plus_blocks').update({image_paths:remainingPaths,image_titles:remainingTitles}).eq('id',block.id);
    if(error)return NextResponse.json({error:'Impossibile eliminare l’immagine A+.'},{status:500});
   }else{
