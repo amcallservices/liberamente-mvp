@@ -41,7 +41,7 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
   // I contenuti A+ approvati vengono letti dal server con il client di servizio:
   // la pagina resta pubblica anche se le policy del browser vengono aggiornate.
   const [{data:reviews},{data:stat},{data:aPlusBlocks},{data:preview},{data:relatedRows}]=await Promise.all([
-    s.from('book_reviews').select('id,rating,body,created_at,profiles!book_reviews_buyer_id_fkey(display_name)').eq('book_id',book.id).order('created_at',{ascending:false}),
+    s.from('book_reviews').select('id,rating,body,created_at,profiles!book_reviews_buyer_id_fkey(display_name)').eq('book_id',book.id).eq('moderation_status','approved').order('created_at',{ascending:false}),
     s.from('book_discovery_stats').select('review_count,average_rating,sales_count').eq('book_id',book.id).maybeSingle(),
     admin().from('book_a_plus_blocks').select('id,image_paths,image_alt,image_titles,sort_order').eq('book_id',book.id).eq('status','approved').order('sort_order').order('created_at'),
     admin().from('book_reading_content').select('preview_enabled,preview_text').eq('book_id',book.id).maybeSingle(),

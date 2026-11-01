@@ -7,7 +7,8 @@ import {revalidatePath} from 'next/cache';
 import {evaluateBookWithAi} from '@/lib/book-ai-review';
 import {extractEbookText,getPdfPageCount} from '@/lib/reading-extraction';
 
-async function verifiedAdmin(){const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).maybeSingle();if(profile?.role!=='admin')redirect('/');return admin()}
+async function verifiedAdminContext(){const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).maybeSingle();if(profile?.role!=='admin')redirect('/');return {db:admin(),userId:user.id}}
+async function verifiedAdmin(){return (await verifiedAdminContext()).db}
 async function decideBook(bookId:string,status:'published'|'rejected'|'blocked',note:string){const db=await verifiedAdmin();const {data:book,error:bookError}=await db.from('books').select('author_id,title,file_path,file_mime_type,page_count').eq('id',bookId).maybeSingle();if(bookError||!book)throw new Error('Libro non trovato.');let pageCount=Number(book.page_count)||null;if(status==='published'&&!pageCount&&book.file_path&&book.file_mime_type==='application/pdf'){const {data:file}=await db.storage.from('ebooks').download(book.file_path);if(file)pageCount=await getPdfPageCount(Buffer.from(await file.arrayBuffer()));}const message=note.trim()||({published:'Libro approvato e pubblicato.',rejected:'Sono necessarie alcune correzioni prima della pubblicazione.',blocked:'Titolo bloccato dalla revisione editoriale.'}[status]);const {error}=await db.from('books').update({status,published_at:status==='published'?new Date().toISOString():null,moderation_note:status==='published'?null:message,...(pageCount?{page_count:pageCount}:{})}).eq('id',bookId);if(error)throw new Error('Aggiornamento editoriale non riuscito.');const {error:noteError}=await db.from('book_review_notes').insert({book_id:bookId,author_id:book.author_id,actor:'admin',message});if(noteError)throw new Error('Decisione salvata, ma non è stato possibile registrare la nota di revisione.');const {data:{user:authorUser}}=await db.auth.admin.getUserById(book.author_id);await notifyAuthorBookDecision({email:authorUser?.email,title:book.title,status,note:message});redirect('/admin')}
 export async function publishBook(bookId:string){await decideBook(bookId,'published','')}
 export async function rejectBook(bookId:string,form:FormData){await decideBook(bookId,'rejected',String(form.get('note')??''))}
@@ -35,6 +36,24 @@ export async function markAuthorRoyaltiesPaid(authorId:string,form:FormData){
  if(results.some((result:any)=>result.error))throw new Error('Impossibile registrare il pagamento.');
  revalidatePath('/admin');revalidatePath('/autore/report');
  redirect('/admin');
+}
+
+export async function moderateBookReview(reviewId:string,formData:FormData){
+ const {db,userId}=await verifiedAdminContext();
+ const rating=Number(formData.get('rating')),body=String(formData.get('body')??'').trim(),status=String(formData.get('status')??'approved'),note=String(formData.get('note')??'').trim();
+ if(!reviewId||!Number.isInteger(rating)||rating<1||rating>5||body.length<20||body.length>2000||!['approved','hidden'].includes(status))redirect('/admin/recensioni?errore=dati');
+ const {error}=await db.from('book_reviews').update({rating,body,moderation_status:status,moderation_note:note||null,moderated_at:new Date().toISOString(),moderated_by:userId}).eq('id',reviewId);
+ if(error)throw new Error('Impossibile aggiornare la recensione.');
+ revalidatePath('/admin/recensioni');revalidatePath('/catalogo');revalidatePath('/');
+ redirect('/admin/recensioni?messaggio=salvata');
+}
+
+export async function deleteBookReview(reviewId:string){
+ const db=await verifiedAdmin();
+ const {error}=await db.from('book_reviews').delete().eq('id',reviewId);
+ if(error)throw new Error('Impossibile eliminare la recensione.');
+ revalidatePath('/admin/recensioni');revalidatePath('/catalogo');revalidatePath('/');
+ redirect('/admin/recensioni?messaggio=eliminata');
 }
 export async function analyzeBookWithAi(bookId:string){
  const db=await verifiedAdmin();
