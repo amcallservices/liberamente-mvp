@@ -6,11 +6,6 @@ import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
-function currentPeriodStart() {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
-}
-
 export async function GET(request: NextRequest) {
   const bookId = request.nextUrl.searchParams.get('bookId')?.trim();
   const pageNumber = Math.floor(Number(request.nextUrl.searchParams.get('page')));
@@ -29,7 +24,7 @@ export async function GET(request: NextRequest) {
   if (pageNumber > totalPages) return NextResponse.json({ error: 'Pagina non disponibile.' }, { status: 400 });
 
   if (pageNumber > 1) {
-    const { data: reads, error } = await db.from('plus_page_reads').select('page_number').eq('reader_id', user.id).eq('book_id', bookId).eq('period_start', currentPeriodStart()).lt('page_number', pageNumber);
+    const { data: reads, error } = await db.from('plus_page_qualifications').select('page_number').eq('reader_id', user.id).eq('book_id', bookId).lt('page_number', pageNumber);
     if (error) return NextResponse.json({ error: 'Impossibile verificare la lettura.' }, { status: 500 });
     const confirmed = new Set((reads ?? []).map((read: { page_number: number }) => read.page_number));
     const missing = Array.from({ length: pageNumber - 1 }, (_, index) => index + 1).find((current) => !confirmed.has(current));

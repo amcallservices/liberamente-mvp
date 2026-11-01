@@ -20,10 +20,8 @@ export default async function PlusLibrary({ searchParams }: { searchParams: Prom
   const db = admin();
   const { data: books } = await db.from('books').select('id,title,subtitle,slug,category,cover_path,file_path,file_mime_type,page_count').eq('status', 'published').eq('plus_enabled', true).eq('marketplace_locale',locale).order('updated_at', { ascending: false });
   const bookIds = (books ?? []).map((book: any) => book.id);
-  const now = new Date();
-  const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
   const [{ data: reads }] = await Promise.all([
-    bookIds.length ? db.from('plus_page_reads').select('book_id,page_number').eq('reader_id', user.id).in('book_id', bookIds).eq('period_start', periodStart) : Promise.resolve({ data: [] as any[] }),
+    bookIds.length ? db.from('plus_page_qualifications').select('book_id,page_number').eq('reader_id', user.id).in('book_id', bookIds) : Promise.resolve({ data: [] as any[] }),
   ]);
   const readsByBook = new Map<string, number[]>();
   (reads ?? []).forEach((read: any) => { const pages = readsByBook.get(read.book_id) ?? []; pages.push(read.page_number); readsByBook.set(read.book_id, pages); });
@@ -35,7 +33,7 @@ export default async function PlusLibrary({ searchParams }: { searchParams: Prom
   return <main className="wrap plus-library">
     <p className="eyebrow">{english?'Your Plus library':'La tua libreria Plus'}</p><h1>{english?'Read included titles':'Leggi i titoli inclusi'}</h1>
     <p className="muted">{english?'Active subscription. Your next renewal date is ':'Abbonamento attivo. La prossima scadenza è '}{subscription?.current_period_end ? new Intl.DateTimeFormat(english?'en-US':'it-IT', { dateStyle: 'long' }).format(new Date(subscription.current_period_end)) : (english?'being updated':'in aggiornamento')}.</p>
-    <p className="notice">{english?'For a fair Plus fund distribution, confirm every page after reading it. You will always resume from the first unconfirmed page. Each page is counted only once per title, reader and month; downloading and printing are unavailable.':'Per una ripartizione corretta del fondo Plus, conferma ogni pagina dopo averla letta. Riprenderai sempre dalla prima pagina non confermata. Ogni pagina viene conteggiata una sola volta per titolo, lettore e mese; download e stampa non sono disponibili.'}</p>
+    <p className="notice">{english?'For a fair Plus fund distribution, confirm every page after reading it. You will always resume from the first unconfirmed page. Each page is confirmed only once per title and reader; its first confirmation remains credited to the author report for that month. Downloading and printing are unavailable.':'Per una ripartizione corretta del fondo Plus, conferma ogni pagina dopo averla letta. Riprenderai sempre dalla prima pagina non confermata. Ogni pagina viene confermata una sola volta per titolo e lettore; la prima conferma resta attribuita al report dell’autore nel relativo mese. Download e stampa non sono disponibili.'}</p>
     {selectedBook ? (() => {
       const cover = coverUrl(selectedBook.cover_path);
       const hasProtectedPdf = Boolean(selectedBook.file_path && selectedBook.file_mime_type === 'application/pdf');

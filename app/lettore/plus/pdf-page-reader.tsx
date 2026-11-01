@@ -44,7 +44,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
       const updated = new Set(confirmed); updated.add(page); setConfirmed(updated);
       const nextPage = Array.from({ length: totalPages }, (_, index) => index + 1).find((current) => !updated.has(current));
       if (nextPage) { setPage(nextPage); setMessage(`Pagina ${page} confermata. Puoi proseguire con la pagina ${nextPage}.`); }
-      else setMessage('Lettura completata: tutte le pagine sono state confermate per questo mese.');
+      else setMessage('Lettura completata: tutte le pagine sono state confermate in modo permanente.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Riprova tra poco.');
     } finally { setSaving(false); }
@@ -63,7 +63,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
       {loadingPage ? <p className="muted">Caricamento della pagina protetta…</p> : <div className="plus-pdf-reader__page-text">{pageText.split(/\n{2,}/).filter(Boolean).map((paragraph, index) => <p key={`${page}-${index}`}>{paragraph}</p>)}</div>}
     </div>
     <p className="plus-pdf-reader__access-note">La lettura Plus è disponibile solo qui, in sequenza: non sono disponibili download, stampa o salto alle pagine successive.</p>
-    <div className="plus-pdf-reader__confirmation"><div><strong>{confirmed.has(page) ? 'Pagina già confermata' : 'Hai terminato questa pagina?'}</strong><p>La conferma viene conteggiata una sola volta nel mese e contribuisce al report dell’autore.</p></div><button className="button" type="button" onClick={confirmPage} disabled={saving || confirmed.has(page) || isComplete}>{saving ? 'Conferma in corso…' : isComplete ? 'Lettura completata' : `Conferma pagina ${page}`}</button></div>
+    <div className="plus-pdf-reader__confirmation"><div><strong>{confirmed.has(page) ? 'Pagina già confermata' : 'Hai terminato questa pagina?'}</strong><p>La conferma avviene una sola volta per questo titolo e contribuisce al report dell’autore nel mese in cui viene effettuata.</p></div><button className="button" type="button" onClick={confirmPage} disabled={saving || confirmed.has(page) || isComplete}>{saving ? 'Conferma in corso…' : isComplete ? 'Lettura completata' : `Conferma pagina ${page}`}</button></div>
     {message && <p className="notice plus-pdf-reader__notice" role="status">{message}</p>}
   </section>;
 }

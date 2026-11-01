@@ -44,11 +44,10 @@ export async function POST(request: Request) {
   // impedire richieste manuali per pagine non ancora lette.
   if (pageNumber > 1) {
     const { data: previousReads, error: previousReadsError } = await db
-      .from('plus_page_reads')
+      .from('plus_page_qualifications')
       .select('page_number')
       .eq('reader_id', user.id)
       .eq('book_id', book.id)
-      .eq('period_start', periodStart)
       .lt('page_number', pageNumber);
     if (previousReadsError) {
       console.error('Impossibile verificare la sequenza Plus', previousReadsError);
@@ -66,15 +65,15 @@ export async function POST(request: Request) {
       );
     }
   }
-  const { error } = await db.from('plus_page_reads').upsert(
+  const { error } = await db.from('plus_page_qualifications').upsert(
     {
       reader_id: user.id,
       book_id: book.id,
       subscription_id: subscription.id,
       page_number: pageNumber,
-      period_start: periodStart,
+      qualified_month: periodStart,
     },
-    { onConflict: 'reader_id,book_id,page_number,period_start', ignoreDuplicates: true },
+    { onConflict: 'reader_id,book_id,page_number', ignoreDuplicates: true },
   );
   if (error) {
     console.error('Impossibile registrare la pagina Plus', error);
