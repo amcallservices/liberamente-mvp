@@ -1,5 +1,6 @@
 import type {MetadataRoute} from 'next';
 
 export default function robots():MetadataRoute.Robots{
-  return {rules:{userAgent:'*',allow:'/',disallow:['/admin','/autore','/lettore','/libreria','/profilo','/accedi','/api/']},sitemap:'https://liberamente.site/sitemap.xml',host:'https://liberamente.site'};
+  const privatePaths=['/admin','/autore','/lettore','/libreria','/profilo','/accedi','/api/'];
+  return {rules:{userAgent:'*',allow:'/',disallow:[...privatePaths,...privatePaths.map(path=>`/en${path}`)]},sitemap:'https://liberamente.site/sitemap.xml',host:'https://liberamente.site'};
 }

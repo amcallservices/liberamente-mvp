@@ -3,9 +3,19 @@ import {admin} from '@/lib/supabase/admin';
 
 const siteUrl='https://liberamente.site';
 
+// Read the current publication state instead of freezing the sitemap at build time.
+export const dynamic='force-dynamic';
+
 export default async function sitemap():Promise<MetadataRoute.Sitemap>{
   const supabase=admin();
-  const {data:books}=await supabase.from('books').select('slug,updated_at,published_at,marketplace_locale').eq('status','published');
+  const books=[];
+  const pageSize=1000;
+  for(let offset=0;;offset+=pageSize){
+    const {data,error}=await supabase.from('books').select('slug,updated_at,published_at,marketplace_locale').eq('status','published').order('id').range(offset,offset+pageSize-1);
+    if(error)throw new Error('Unable to load published books for the sitemap');
+    books.push(...(data??[]));
+    if(!data||data.length<pageSize)break;
+  }
   const core:MetadataRoute.Sitemap=[
     {url:siteUrl,lastModified:new Date(),changeFrequency:'daily',priority:1},
     {url:`${siteUrl}/catalogo`,lastModified:new Date(),changeFrequency:'daily',priority:.9},
