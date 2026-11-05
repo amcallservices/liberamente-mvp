@@ -1,5 +1,7 @@
 import type {MetadataRoute} from 'next';
 import {admin} from '@/lib/supabase/admin';
+import {canonicalBookUrl} from '@/lib/book-seo';
+import {marketplaceLocale} from '@/lib/marketplace';
 
 const siteUrl='https://liberamente.site';
 
@@ -26,5 +28,10 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
     {url:`${siteUrl}/en/plus`,lastModified:new Date(),changeFrequency:'weekly',priority:.75},
     {url:`${siteUrl}/en/faq`,lastModified:new Date(),changeFrequency:'monthly',priority:.65}
   ];
-  return [...core,...(books??[]).map((book:any)=>{const english=book.marketplace_locale==='en';return {url:`${siteUrl}${english?'/en':''}/ebook/${book.slug}`,lastModified:new Date(book.updated_at??book.published_at??Date.now()),changeFrequency:'weekly' as const,priority:.8}})];
+  return [...core,...(books??[]).map((book:any)=>({
+    url:canonicalBookUrl(marketplaceLocale(book.marketplace_locale),book.slug),
+    lastModified:new Date(book.updated_at??book.published_at??Date.now()),
+    changeFrequency:'weekly' as const,
+    priority:.8,
+  }))];
 }
