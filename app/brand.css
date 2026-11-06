@@ -94,13 +94,13 @@ header .language-switcher a.active-language {
 .site-header .brand {
   position: relative;
   display: flex !important;
-  flex: 0 0 276px;
+  flex: 0 0 296px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   gap: 8px;
-  width: 276px;
-  min-width: 276px;
+  width: 296px;
+  min-width: 296px;
   min-height: 0;
   padding: 7px 0 8px;
   background: none !important;
@@ -111,9 +111,9 @@ header .language-switcher a.active-language {
 .site-header .brand::before {
   content: "";
   display: block;
-  width: 250px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 268px;
+  height: 52px;
+  flex: 0 0 52px;
   background: url('/liberamente-logo.png') left center / contain no-repeat;
 }
 .site-header .brand span {
@@ -129,13 +129,13 @@ header .language-switcher a.active-language {
 }
 @media (max-width: 900px) {
   .site-header .brand {
-    flex-basis: 222px;
-    width: 222px;
-    min-width: 222px;
+    flex-basis: 236px;
+    width: 236px;
+    min-width: 236px;
     gap: 6px;
     padding: 5px 0;
   }
-  .site-header .brand::before { width: 202px; height: 40px; flex-basis: 40px; }
+  .site-header .brand::before { width: 214px; height: 42px; flex-basis: 42px; }
   .site-header .brand span { font-size: 11px !important; }
 }
 @media (max-width: 700px) {
@@ -146,6 +146,6 @@ header .language-switcher a.active-language {
     gap: 5px;
     padding: 3px 0 7px;
   }
-  .site-header .brand::before { width: 180px; height: 36px; flex-basis: 36px; }
+  .site-header .brand::before { width: 190px; height: 38px; flex-basis: 38px; }
   .site-header .brand span { font-size: 10.5px !important; }
 }
