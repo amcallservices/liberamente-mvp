@@ -144,3 +144,76 @@ header{align-items:center;gap:20px;padding-top:13px!important;padding-bottom:13p
     margin:-15px -15px 16px;
   }
 }
+
+/* Home: testo editoriale leggibile senza spezzare le parole. */
+.hero h1 {
+  max-width: 760px;
+  font-size: clamp(3rem, 4.65vw, 5.55rem);
+  letter-spacing: -0.065em;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: none;
+  text-wrap: pretty;
+}
+
+@media (max-width: 700px) {
+  .hero h1 {
+    max-width: 100%;
+    font-size: clamp(2.9rem, 12vw, 4.2rem);
+    letter-spacing: -0.06em;
+  }
+}
+
+/* Prezzo Plus: contrasto alto e gerarchia chiara. */
+.plus-home-promo__actions strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid rgba(246, 199, 104, .8);
+  border-radius: 999px;
+  background: #fff8ea;
+  color: #123e31 !important;
+  font: 800 clamp(1.06rem, 1.7vw, 1.35rem)/1.1 Georgia, serif;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .16);
+}
+
+/* Catalogo: schede più ariose e più facili da confrontare. */
+.catalogue {
+  column-gap: 38px;
+  row-gap: 64px;
+}
+
+.catalogue .book-card {
+  min-height: 570px;
+  padding: 22px;
+}
+
+.catalogue .book-card .cover-image,
+.catalogue .book-card .cover {
+  width: calc(100% + 44px);
+  height: 300px;
+  margin: -22px -22px 22px;
+}
+
+.catalogue .book-card .clamp { margin-top: 14px; }
+
+@media (max-width: 980px) {
+  .catalogue { column-gap: 28px; row-gap: 46px; }
+  .catalogue .book-card .cover-image,
+  .catalogue .book-card .cover { height: 270px; }
+}
+
+@media (max-width: 700px) {
+  .catalogue { row-gap: 32px; }
+  .catalogue .book-card {
+    min-height: 0;
+    padding: 17px;
+  }
+  .catalogue .book-card .cover-image,
+  .catalogue .book-card .cover {
+    width: calc(100% + 34px);
+    height: 252px;
+    margin: -17px -17px 18px;
+  }
+}

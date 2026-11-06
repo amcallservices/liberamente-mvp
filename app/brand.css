@@ -89,3 +89,63 @@ header .language-switcher a.active-language {
     line-height: 1.3;
   }
 }
+
+/* Marchio e payoff: due righe indipendenti, senza sovrapposizioni. */
+.site-header .brand {
+  position: relative;
+  display: flex !important;
+  flex: 0 0 276px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 276px;
+  min-width: 276px;
+  min-height: 0;
+  padding: 7px 0 8px;
+  background: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 1;
+}
+.site-header .brand::before {
+  content: "";
+  display: block;
+  width: 250px;
+  height: 48px;
+  flex: 0 0 48px;
+  background: url('/liberamente-logo.png') left center / contain no-repeat;
+}
+.site-header .brand span {
+  position: static !important;
+  display: block;
+  max-width: none !important;
+  margin: 0 !important;
+  color: var(--muted);
+  font: 600 13px/1.25 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+}
+@media (max-width: 900px) {
+  .site-header .brand {
+    flex-basis: 222px;
+    width: 222px;
+    min-width: 222px;
+    gap: 6px;
+    padding: 5px 0;
+  }
+  .site-header .brand::before { width: 202px; height: 40px; flex-basis: 40px; }
+  .site-header .brand span { font-size: 11px !important; }
+}
+@media (max-width: 700px) {
+  .site-header .brand {
+    width: 100%;
+    min-width: 0;
+    flex-basis: auto;
+    gap: 5px;
+    padding: 3px 0 7px;
+  }
+  .site-header .brand::before { width: 180px; height: 36px; flex-basis: 36px; }
+  .site-header .brand span { font-size: 10.5px !important; }
+}
