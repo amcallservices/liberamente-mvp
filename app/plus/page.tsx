@@ -33,7 +33,7 @@ export default async function Plus({ searchParams }: { searchParams: Promise<{ e
       <p className="eyebrow">LIBERAMENTE Plus</p>
       <h1>{english?'Read more. Support independent writers.':'Leggi di più. Sostieni chi scrive.'}</h1>
       <p className="plus-lead">{english?'One subscription to read ebooks in the Plus programme. Each confirmed page contributes transparently to the share due to authors.':'Un solo abbonamento per leggere gli ebook inclusi nel programma Plus. Ogni pagina confermata dal lettore contribuisce in modo trasparente alla quota destinata agli autori.'}</p>
-      <div className="plus-price"><strong>4,99 €</strong><span>{english?'per month · cancel anytime':'al mese · annulla quando vuoi'}</span></div>
+            <div className="plus-price"><strong data-prefix={english ? 'From' : 'Da'}>4,99 €</strong><span>{english?'per month · cancel anytime':'al mese · annulla quando vuoi'}</span></div>
       {notice && <p className="notice">{notice}</p>}
 
       <div className="plus-actions plus-actions-visible" aria-label="Azioni LIBERAMENTE Plus">

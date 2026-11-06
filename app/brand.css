@@ -3,25 +3,26 @@ header .brand {
   position: relative;
   display: block;
   flex: 0 0 auto;
-  min-width: 250px;
-  min-height: 94px;
+  min-width: 260px;
+  min-height: 88px;
   padding: 0;
   color: transparent !important;
   font-size: 0 !important;
   line-height: 1;
-  background: url('/liberamente-logo.png') left 2px top 2px / 212px auto no-repeat;
+  background: url('/liberamente-logo.png') left 2px top 0 / 212px auto no-repeat;
 }
 
 header .brand span {
   position: absolute;
-  top: 76px;
+  top: 55px;
   left: 2px;
   display: block;
   margin: 0;
+  max-width: 260px;
   color: var(--muted);
-  font: 600 13px/1.25 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 600 13px/1.35 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 header .brand:hover,
@@ -60,25 +61,31 @@ header .language-switcher a.active-language {
 @media (max-width: 900px) {
   header .brand {
     min-width: 206px;
-    min-height: 80px;
+    min-height: 76px;
     background-size: 174px auto;
   }
 
-  header .brand span { top: 62px; }
+  header .brand span {
+    top: 48px;
+    max-width: 206px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 700px) {
   header .brand {
     width: 100%;
     min-width: 0;
-    min-height: 72px;
+    min-height: 68px;
     padding: 0;
     background-size: 148px auto;
   }
 
   header .brand span {
-    top: 54px;
+    top: 42px;
     left: 0;
-    font-size: 11px;
+    max-width: 190px;
+    font-size: 10.5px;
+    line-height: 1.3;
   }
 }

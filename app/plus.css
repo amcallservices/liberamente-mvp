@@ -13,3 +13,37 @@
 .plus-pdf-reader__step{font-size:.88rem;color:#52635a}
 @media print{.plus-pdf-reader,.plus-library .plus-reading-book{display:none!important}}
 @media(max-width:700px){.plus-pdf-reader__surface{min-height:22rem;padding:1.1rem}.plus-pdf-reader__page-text{font-size:1rem;line-height:1.75}}
+
+/* Prezzo Plus: valore immediato e leggibile sullo sfondo scuro. */
+.plus-hero .plus-price{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:.28rem;
+  margin:2rem 0 1.25rem;
+  padding:1rem 1.25rem 1.05rem;
+  border:1px solid rgba(246,207,112,.72);
+  border-radius:.9rem;
+  background:rgba(7,27,38,.28);
+  box-shadow:0 14px 26px rgba(6,23,28,.16);
+}
+.plus-hero .plus-price strong{
+  display:block;
+  color:#f6cf70;
+  font-size:clamp(2.5rem,4.6vw,3.65rem);
+  line-height:.9;
+  letter-spacing:-.05em;
+}
+.plus-hero .plus-price strong::before{
+  content:attr(data-prefix);
+  display:block;
+  margin-bottom:.28rem;
+  color:#fff7e7;
+  font:700 .75rem/1 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.plus-hero .plus-price span{
+  color:#fff7e7;
+  font:600 .98rem/1.3 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}

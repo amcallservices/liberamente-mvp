@@ -103,3 +103,44 @@ header{align-items:center;gap:20px;padding-top:13px!important;padding-bottom:13p
   word-break:break-word;
   hyphens:auto;
 }
+
+/* Catalogo: più spazio attorno a copertine, testi e azioni. */
+.catalogue{
+  column-gap:32px;
+  row-gap:58px;
+}
+.catalogue .book-card{
+  min-height:100%;
+  padding:18px;
+  overflow:hidden;
+  background:#fffdf8;
+  border:1px solid #cbd7cd;
+}
+.catalogue .book-card .cover-image,
+.catalogue .book-card .cover{
+  width:calc(100% + 36px);
+  height:282px;
+  margin:-18px -18px 20px;
+  padding:16px;
+  border-bottom:1px solid #d4ddd4;
+  background:#edf2ed;
+  object-fit:contain;
+}
+.catalogue .book-card .cover{padding:24px}
+.catalogue .book-card .clamp{margin-top:12px}
+.catalogue .book-card .card-footer{margin-top:24px}
+@media(max-width:980px){
+  .catalogue{column-gap:24px;row-gap:36px}
+  .catalogue .book-card .cover-image,
+  .catalogue .book-card .cover{height:250px}
+}
+@media(max-width:700px){
+  .catalogue{row-gap:28px}
+  .catalogue .book-card{padding:15px}
+  .catalogue .book-card .cover-image,
+  .catalogue .book-card .cover{
+    width:calc(100% + 30px);
+    height:238px;
+    margin:-15px -15px 16px;
+  }
+}
