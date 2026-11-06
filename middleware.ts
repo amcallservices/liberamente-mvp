@@ -1,5 +1,8 @@
 import {createServerClient} from '@supabase/ssr';import {NextResponse,type NextRequest} from 'next/server';
 export async function middleware(request:NextRequest){
+  // The local-only design preview is deliberately independent of external services.
+  if(request.nextUrl.pathname.startsWith('/anteprima-grafica')) return NextResponse.next();
+  if(!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return NextResponse.next();
   const english=request.nextUrl.pathname==='/en'||request.nextUrl.pathname.startsWith('/en/');
   const destination=english?request.nextUrl.clone():null;
   if(destination){destination.pathname=request.nextUrl.pathname==='/en'?'/' : request.nextUrl.pathname.replace(/^\/en/,'');destination.searchParams.set('market','en');}

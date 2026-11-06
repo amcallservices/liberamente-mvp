@@ -21,3 +21,7 @@
 
 /* Prevent user-entered descriptions from escaping the product details column. */
 .book-product-copy{min-width:0}.book-product-copy .description{max-inline-size:100%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;hyphens:auto}
+
+/* Isola la pagina di anteprima locale dalla navigazione del sito esistente. */
+body:has(.lp-preview) .site-header,
+body:has(.lp-preview) .site-footer{display:none!important}

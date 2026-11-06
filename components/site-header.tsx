@@ -14,7 +14,7 @@ export function SiteHeader({signedIn,isPrimaryAdmin,hasAuthorArea}:Props){
   const currentPath=english?(pathname.replace(/^\/en(?=\/|$)/,'')||'/'):pathname;
   const local=(path:string)=>marketplacePath(locale,path);
   const text=english?{catalogue:'Catalogue',readers:'Reader area',authors:'Author area',plusAuthors:'Plus authors',reports:'Author reports',write:'Write your book',admin:'Administration',manage:'Manage Plus',profile:'Profile',signOut:'Sign out',login:'Sign in'}:{catalogue:'Catalogo',readers:'Area lettori',authors:'Area autori',plusAuthors:'Plus autori',reports:'Report autori',write:'Scrivi il tuo libro',admin:'Amministrazione',manage:'Gestione Plus',profile:'Profilo',signOut:'Esci',login:'Accedi'};
-  return <header>
+  return <header className="site-header">
     <div className="header-top">
       <Link className="brand" href={local('/')}>LIBERAMENTE.site <span>– lo store di Scrittore.site</span></Link>
       <nav>
