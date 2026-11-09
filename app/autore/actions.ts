@@ -5,6 +5,7 @@ import {createClient} from '@/lib/supabase/server';
 import {notifyAdminBookSubmitted} from '@/lib/notifications';
 import {admin} from '@/lib/supabase/admin';
 import {analyzeEbookText} from '@/lib/reading-extraction';
+import {storePreviewPdf} from '@/lib/preview-pdf';
 import {formatIban,isValidIban,normalizeIban} from '@/lib/iban';
 
 const schema=z.object({title:z.string().trim().min(2).max(180),subtitle:z.string().trim().max(220),description:z.string().trim().min(80).max(4000),categories:z.array(z.string().trim().min(2).max(80)).min(1).max(3),price:z.coerce.number().min(.99).max(9999.99),rights:z.literal('on'),marketplaceLocale:z.enum(['it','en'])});
@@ -47,8 +48,9 @@ export async function setBookPreview(form:FormData){
     if(!book?.file_path)redirect('/autore?errore=anteprima');
     const {data:file}=await admin().storage.from('ebooks').download(book.file_path);
     if(!file)redirect('/autore?errore=anteprima');
-    const analysis=await analyzeEbookText(Buffer.from(await file.arrayBuffer()),book.file_mime_type);
+    const pdfBuffer=Buffer.from(await file.arrayBuffer());const analysis=await analyzeEbookText(pdfBuffer,book.file_mime_type);
     if(!analysis.ok)redirect('/autore?messaggio=Il+PDF+non+%C3%A8+leggibile+per+anteprima+e+lettura+online.+Ricarica+un+PDF+con+testo+selezionabile.');
+    await storePreviewPdf(user.id,bookId,pdfBuffer);
     const {error:creationError}=await s.from('book_reading_content').upsert({book_id:bookId,author_id:user.id,full_text:analysis.fullText,preview_text:analysis.previewText,preview_enabled:true},{onConflict:'book_id'});
     if(creationError)redirect('/autore?errore=anteprima');
   }

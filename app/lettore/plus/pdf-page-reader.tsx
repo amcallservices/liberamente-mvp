@@ -15,6 +15,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
   const [message, setMessage] = useState('');
   const [pageText, setPageText] = useState('');
   const [loadingPage, setLoadingPage] = useState(true);
+  const [pagePdfUrl, setPagePdfUrl] = useState('');
   const completed = confirmed.size;
   const progress = Math.round((completed / totalPages) * 100);
   const isComplete = completed >= totalPages;
@@ -32,6 +33,22 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
       .catch((error) => { if (active) setMessage(error instanceof Error ? error.message : 'Riprova tra poco.'); })
       .finally(() => { if (active) setLoadingPage(false); });
     return () => { active = false; };
+  }, [bookId, page]);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl = '';
+    setPagePdfUrl('');
+    fetch(`/api/plus/reading-page?bookId=${encodeURIComponent(bookId)}&page=${page}&format=pdf`, { cache: 'no-store' })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const blob = await response.blob();
+        if (!active) return;
+        objectUrl = URL.createObjectURL(blob);
+        setPagePdfUrl(objectUrl);
+      })
+      .catch(() => { /* resta disponibile il testo della pagina */ });
+    return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [bookId, page]);
 
   async function confirmPage() {
@@ -60,6 +77,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
       <span className="plus-pdf-reader__page">Pagina {page} di {totalPages}</span>
     </div>
     <div className="plus-pdf-reader__surface" aria-live="polite">
+      {pagePdfUrl && <iframe className="plus-pdf-reader__page-frame" title={`Pagina ${page} di ${title}`} src={`${pagePdfUrl}#toolbar=0&navpanes=0&view=FitH`} />}
       {loadingPage ? <p className="muted">Caricamento della pagina protetta…</p> : <div className="plus-pdf-reader__page-text">{pageText.split(/\n{2,}/).filter(Boolean).map((paragraph, index) => <p key={`${page}-${index}`}>{paragraph}</p>)}</div>}
     </div>
     <p className="plus-pdf-reader__access-note">La lettura Plus è disponibile solo qui, in sequenza: non sono disponibili download, stampa o salto alle pagine successive.</p>
