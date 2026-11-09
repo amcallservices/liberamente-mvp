@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PdfPagesViewer } from '../pdf-pages-viewer';
 
 type PdfPageReaderProps = { bookId: string; title: string; totalPages: number; confirmedPages: number[] };
 type PagePayload = { text?: string; error?: string };
@@ -17,6 +18,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
   const [loadingPage, setLoadingPage] = useState(true);
   const [pagePdfUrl, setPagePdfUrl] = useState('');
   const [pdfLoading, setPdfLoading] = useState(true);
+  const [viewerFailed, setViewerFailed] = useState(false);
   const completed = confirmed.size;
   const progress = Math.round((completed / totalPages) * 100);
   const isComplete = completed >= totalPages;
@@ -40,6 +42,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
     let active = true;
     let objectUrl = '';
     setPagePdfUrl('');
+    setViewerFailed(false);
     setPdfLoading(true);
     fetch(`/api/plus/reading-page?bookId=${encodeURIComponent(bookId)}&page=${page}&format=pdf`, { cache: 'no-store' })
       .then(async (response) => {
@@ -82,8 +85,8 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
       <span className="plus-pdf-reader__page">Pagina {page} di {totalPages}</span>
     </div>
     <div className="plus-pdf-reader__surface" aria-live="polite">
-      {pagePdfUrl && <iframe className="plus-pdf-reader__page-frame" title={`Pagina ${page} di ${title}`} src={`${pagePdfUrl}#toolbar=0&navpanes=0&view=FitH`} />}
-      {loadingPage || pdfLoading ? <p className="muted">Caricamento della pagina protetta…</p> : pagePdfUrl ? null : textBlock}
+      {pagePdfUrl && !viewerFailed && <div className="plus-pdf-reader__page-frame"><PdfPagesViewer url={pagePdfUrl} title={`Pagina ${page} di ${title}`} firstPageLabel={page} onError={() => setViewerFailed(true)} /></div>}
+      {loadingPage || pdfLoading ? <p className="muted">Caricamento della pagina protetta…</p> : pagePdfUrl && !viewerFailed ? null : textBlock}
     </div>
     <p className="plus-pdf-reader__access-note">La lettura Plus è disponibile solo qui, in sequenza: non sono disponibili download, stampa o salto alle pagine successive.</p>
     <div className="plus-pdf-reader__confirmation"><div><strong>{confirmed.has(page) ? 'Pagina già confermata' : 'Hai terminato questa pagina?'}</strong><p>La conferma avviene una sola volta per questo titolo e contribuisce al report dell’autore nel mese in cui viene effettuata.</p></div><button className="button" type="button" onClick={confirmPage} disabled={saving || confirmed.has(page) || isComplete}>{saving ? 'Conferma in corso…' : isComplete ? 'Lettura completata' : `Conferma pagina ${page}`}</button></div>
