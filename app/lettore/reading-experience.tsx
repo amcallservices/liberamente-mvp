@@ -22,8 +22,9 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
   const modeLabel=mode==='preview'?'Apri e leggi l’estratto':'Apri il lettore';
   const selectedBlock=chapters[Number(chapter)]?.blockIndex??0;
   const hasOriginalPdf=mode==='full'&&fileMimeType==='application/pdf'&&Boolean(purchaseId);
-  // Con le pagine originali dell’estratto si mostra solo quella versione, senza il testo estratto duplicato.
-  const showPdfOnly=mode==='preview'&&Boolean(previewPdfUrl);
+  // Con le pagine originali (estratto o libro acquistato) si mostra solo quella versione, senza il testo estratto duplicato.
+  // Se il PDF non si apre, resta il testo come ripiego.
+  const showPdfOnly=((mode==='preview'&&Boolean(previewPdfUrl))||hasOriginalPdf)&&!documentError;
 
   useEffect(()=>{
     if(!('speechSynthesis' in window))return;
@@ -55,7 +56,7 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
   };
   const togglePause=()=>{const speech=speechRef.current;if(!speech)return;if(speech.paused){speech.resume();setPlaying(true)}else{speech.pause();setPlaying(false)}};
   const openOriginal=async()=>{
-    if(!purchaseId||documentUrl)return;
+    if(!purchaseId||documentUrl||documentLoading)return;
     setDocumentLoading(true);setDocumentError('');
     try{const response=await fetch(`/api/reader-file?purchaseId=${encodeURIComponent(purchaseId)}`),body=await response.json() as {url?:string;error?:string};if(!response.ok||!body.url)throw new Error(body.error||'Documento non disponibile.');setDocumentUrl(body.url)}
     catch(error){setDocumentError(error instanceof Error?error.message:'Documento non disponibile.')}
@@ -65,7 +66,8 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
 
   const italianVoices=voices.filter(voice=>voice.lang.toLowerCase().startsWith('it'));
   const englishVoices=voices.filter(voice=>voice.lang.toLowerCase().startsWith('en'));
-  return <details className={`reading-experience reading-${mode}`}>
+  // Dopo l’acquisto il libro impaginato si apre da solo quando si apre il lettore.
+  return <details className={`reading-experience reading-${mode}`} onToggle={event=>{if(event.currentTarget.open&&hasOriginalPdf)void openOriginal()}}>
     <summary><span>{modeLabel}</span><small>{mode==='preview'?'Anteprima autorizzata dall’autore':'Riservato al tuo acquisto'}</small></summary>
     <div className="reading-toolbar">
       <label>Inizia l’ascolto da<select value={chapter} onChange={event=>{stop();setChapter(event.target.value)}}>{chapters.map((item,index)=><option key={`${item.title}-${index}`} value={index}>{item.title}</option>)}</select></label>
