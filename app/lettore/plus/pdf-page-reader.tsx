@@ -83,7 +83,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
     </div>
     <div className="plus-pdf-reader__surface" aria-live="polite">
       {pagePdfUrl && <iframe className="plus-pdf-reader__page-frame" title={`Pagina ${page} di ${title}`} src={`${pagePdfUrl}#toolbar=0&navpanes=0&view=FitH`} />}
-      {loadingPage || pdfLoading ? <p className="muted">Caricamento della pagina protetta…</p> : pagePdfUrl ? <details className="plus-pdf-reader__text-toggle"><summary>Mostra il testo della pagina</summary>{textBlock}</details> : textBlock}
+      {loadingPage || pdfLoading ? <p className="muted">Caricamento della pagina protetta…</p> : pagePdfUrl ? null : textBlock}
     </div>
     <p className="plus-pdf-reader__access-note">La lettura Plus è disponibile solo qui, in sequenza: non sono disponibili download, stampa o salto alle pagine successive.</p>
     <div className="plus-pdf-reader__confirmation"><div><strong>{confirmed.has(page) ? 'Pagina già confermata' : 'Hai terminato questa pagina?'}</strong><p>La conferma avviene una sola volta per questo titolo e contribuisce al report dell’autore nel mese in cui viene effettuata.</p></div><button className="button" type="button" onClick={confirmPage} disabled={saving || confirmed.has(page) || isComplete}>{saving ? 'Conferma in corso…' : isComplete ? 'Lettura completata' : `Conferma pagina ${page}`}</button></div>

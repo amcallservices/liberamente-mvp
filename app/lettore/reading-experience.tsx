@@ -22,6 +22,8 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
   const modeLabel=mode==='preview'?'Apri e leggi l’estratto':'Apri il lettore';
   const selectedBlock=chapters[Number(chapter)]?.blockIndex??0;
   const hasOriginalPdf=mode==='full'&&fileMimeType==='application/pdf'&&Boolean(purchaseId);
+  // Con le pagine originali dell’estratto si mostra solo quella versione, senza il testo estratto duplicato.
+  const showPdfOnly=mode==='preview'&&Boolean(previewPdfUrl);
 
   useEffect(()=>{
     if(!('speechSynthesis' in window))return;
@@ -73,7 +75,7 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
     </div>
     {mode==='preview'&&previewPdfUrl&&<section className="original-document preview-document"><div><strong>Le pagine originali dell’estratto</strong><p>Le pagine 20–30 del libro, con immagini e impaginazione come nell’edizione originale.</p></div><a className="button alt" href={previewPdfUrl} target="_blank" rel="noopener noreferrer">Apri a schermo intero</a><div className="pdf-reader"><iframe title={`Estratto impaginato di ${title}`} src={`${previewPdfUrl}#toolbar=0&navpanes=0&view=FitH`}/></div></section>}
     {hasOriginalPdf&&<section className="original-document"><div><strong>Edizione impaginata</strong><p>Leggi il PDF originale con immagini, pagine e formattazione identiche al libro acquistato.</p></div>{!documentUrl?<button type="button" onClick={openOriginal} disabled={documentLoading}>{documentLoading?'Apertura in corso…':'Apri il libro impaginato'}</button>:<div className="pdf-reader"><label>Vai alla pagina<input type="number" min="1" inputMode="numeric" value={pdfPage} onChange={event=>setPdfPage(event.target.value.replace(/\D/g,'')||'1')}/></label><iframe title={`Documento originale di ${title}`} src={`${documentUrl}#page=${pdfPage}&view=FitH`}/></div>}{documentError&&<p className="notice">{documentError}</p>}</section>}
-    <p className="reading-help">Scegli prima un capitolo o un punto di partenza per la voce. Il testo accessibile è disponibile qui sotto; per i PDF l’edizione impaginata conserva pagine e immagini dell’originale.</p>
-    <article className="reading-text" aria-label={`Testo di ${title}`}>{blocks.map((block,index)=>block.kind==='heading'?<h3 id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text}`}>{block.text}</h3>:<p id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text.slice(0,24)}`}>{block.text}</p>)}</article>
+    {!showPdfOnly&&<p className="reading-help">Scegli prima un capitolo o un punto di partenza per la voce. Il testo accessibile è disponibile qui sotto; per i PDF l’edizione impaginata conserva pagine e immagini dell’originale.</p>}
+    {!showPdfOnly&&<article className="reading-text" aria-label={`Testo di ${title}`}>{blocks.map((block,index)=>block.kind==='heading'?<h3 id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text}`}>{block.text}</h3>:<p id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text.slice(0,24)}`}>{block.text}</p>)}</article>}
   </details>;
 }
