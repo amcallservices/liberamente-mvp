@@ -369,3 +369,39 @@ header{align-items:center;gap:20px;padding-top:13px!important;padding-bottom:13p
 
   .plus-home-promo { padding: 24px !important; }
 }
+
+/* I titoli molto lunghi rimangono sempre dentro le card. */
+.discovery-book,
+.catalogue .book-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.discovery-copy h3,
+.catalogue .book-card h2 {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.discovery-copy h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: clamp(1.08rem, 1.35vw, 1.28rem);
+  line-height: 1.08;
+}
+
+.discovery-book .discovery-description {
+  -webkit-line-clamp: 2;
+}
+
+.catalogue .book-card h2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
