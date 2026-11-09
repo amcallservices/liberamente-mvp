@@ -16,6 +16,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
   const [pageText, setPageText] = useState('');
   const [loadingPage, setLoadingPage] = useState(true);
   const [pagePdfUrl, setPagePdfUrl] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(true);
   const completed = confirmed.size;
   const progress = Math.round((completed / totalPages) * 100);
   const isComplete = completed >= totalPages;
@@ -39,6 +40,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
     let active = true;
     let objectUrl = '';
     setPagePdfUrl('');
+    setPdfLoading(true);
     fetch(`/api/plus/reading-page?bookId=${encodeURIComponent(bookId)}&page=${page}&format=pdf`, { cache: 'no-store' })
       .then(async (response) => {
         if (!response.ok) return;
@@ -47,7 +49,8 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
         objectUrl = URL.createObjectURL(blob);
         setPagePdfUrl(objectUrl);
       })
-      .catch(() => { /* resta disponibile il testo della pagina */ });
+      .catch(() => { /* resta disponibile il testo della pagina */ })
+      .finally(() => { if (active) setPdfLoading(false); });
     return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [bookId, page]);
 
@@ -67,6 +70,8 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
     } finally { setSaving(false); }
   }
 
+  const textBlock = <div className="plus-pdf-reader__page-text">{pageText.split(/\n{2,}/).filter(Boolean).map((paragraph, index) => <p key={`${page}-${index}`}>{paragraph}</p>)}</div>;
+
   return <section className="plus-pdf-reader" aria-label={`Lettura di ${title}`}>
     <div className="plus-pdf-reader__topline"><div><p className="eyebrow">Lettura verificata Plus</p><h3>Leggi il PDF e conferma ogni pagina</h3></div><p className="plus-pdf-reader__progress">{completed} di {totalPages} pagine confermate</p></div>
     <div className="plus-pdf-reader__bar" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
@@ -78,7 +83,7 @@ export function PdfPageReader({ bookId, title, totalPages, confirmedPages }: Pdf
     </div>
     <div className="plus-pdf-reader__surface" aria-live="polite">
       {pagePdfUrl && <iframe className="plus-pdf-reader__page-frame" title={`Pagina ${page} di ${title}`} src={`${pagePdfUrl}#toolbar=0&navpanes=0&view=FitH`} />}
-      {loadingPage ? <p className="muted">Caricamento della pagina protetta…</p> : <div className="plus-pdf-reader__page-text">{pageText.split(/\n{2,}/).filter(Boolean).map((paragraph, index) => <p key={`${page}-${index}`}>{paragraph}</p>)}</div>}
+      {loadingPage || pdfLoading ? <p className="muted">Caricamento della pagina protetta…</p> : pagePdfUrl ? <details className="plus-pdf-reader__text-toggle"><summary>Mostra il testo della pagina</summary>{textBlock}</details> : textBlock}
     </div>
     <p className="plus-pdf-reader__access-note">La lettura Plus è disponibile solo qui, in sequenza: non sono disponibili download, stampa o salto alle pagine successive.</p>
     <div className="plus-pdf-reader__confirmation"><div><strong>{confirmed.has(page) ? 'Pagina già confermata' : 'Hai terminato questa pagina?'}</strong><p>La conferma avviene una sola volta per questo titolo e contribuisce al report dell’autore nel mese in cui viene effettuata.</p></div><button className="button" type="button" onClick={confirmPage} disabled={saving || confirmed.has(page) || isComplete}>{saving ? 'Conferma in corso…' : isComplete ? 'Lettura completata' : `Conferma pagina ${page}`}</button></div>
