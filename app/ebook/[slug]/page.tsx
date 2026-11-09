@@ -7,7 +7,7 @@ import {coverUrl} from '@/lib/covers';
 import {ShareBook} from '../share-book';
 import {ReadingExperience} from '@/app/lettore/reading-experience';
 import {getPdfPageCount} from '@/lib/reading-extraction';
-import {previewPdfUrl} from '@/lib/preview-pdf';
+import {ensurePreviewPdfUrl} from '@/lib/preview-pdf';
 import {marketplaceLocale,marketplacePath} from '@/lib/marketplace';
 import {buildBookMetadata,buildBookStructuredData} from '@/lib/book-seo';
 
@@ -45,7 +45,7 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
     admin().from('book_reading_content').select('preview_enabled,preview_text').eq('book_id',book.id).maybeSingle(),
     admin().from('books').select('id,title,slug,cover_path,category,profiles!books_author_id_fkey(display_name)').eq('status','published').eq('marketplace_locale',locale).neq('id',book.id).limit(18)
   ]);
-  const previewPdf=preview?.preview_enabled&&preview.preview_text?await previewPdfUrl(book.author_id,book.id):null;
+  const previewPdf=preview?.preview_enabled&&preview.preview_text?await ensurePreviewPdfUrl({id:book.id,author_id:book.author_id,file_path:book.file_path,file_mime_type:book.file_mime_type,pageCount}):null;
   const blocks=aPlusBlocks??[],paths=blocks.flatMap((block:any)=>block.image_paths??[]);
   const {data:signed}=paths.length?await admin().storage.from('a-plus').createSignedUrls(paths,3600):{data:[]};
   const signedUrls=new Map((signed??[]).map((row:any)=>[row.path,row.signedUrl]));
