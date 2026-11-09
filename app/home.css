@@ -115,17 +115,50 @@
 
 @media (max-width: 900px) {
   .lm-wrap { padding-inline: 20px; }
-  .lm-hero { padding: 64px 0 96px; }
+  .lm-grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
+  .lm-hero { padding: 40px 0 72px; }
+  .lm-hero h1 { font-size: 42px; }
+  .lm-hero__side { gap: 22px; }
+  .lm-hero__side p { font-size: 17px; }
+  .lm-hero__side .lm-btn { width: 100%; }
   .lm-hero h1, .lm-hero__side, .lm-stagepanel, .lm-info, .lm-plus__copy, .lm-calc, .lm-authors__copy, .lm-authors__fig { grid-column: 1 / -1; }
-  .lm-showcase { margin-top: 56px; }
-  .lm-stagepanel { min-height: 420px; padding: 48px 20px 24px; }
+  /* Showcase: tabs, book, covers to pick, then the details */
+  .lm-showcase { margin-top: 48px; }
+  .lm-showcase .lm-grid { display: flex; flex-direction: column; gap: 20px; }
+  .lm-info { display: contents; }
+  .lm-info__top { order: 0; flex-direction: column; align-items: stretch; gap: 12px; }
+  .lm-stagepanel { order: 1; min-height: 0; padding: 36px 16px 12px; gap: 12px; margin-inline: -20px; }
+  .lm-info__thumbs { order: 2; }
+  .lm-info__book { order: 3; gap: 12px; margin-top: 8px; }
+  .lm-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .lm-home .lm-tabs button { flex: 1 0 auto; padding: 0 12px; font-size: 14px; }
   .lm-book { width: 150px; }
   .lm-book__page { padding: 12px; gap: 6px; }
   .lm-book__title { font-size: 14px; }
   .lm-book__blurb { font-size: 10px; display: -webkit-box; -webkit-line-clamp: 9; -webkit-box-orient: vertical; overflow: hidden; }
-  .lm-plus, .lm-authors { padding: 96px 0; }
-  .lm-calc { padding: 28px 20px; }
+  .lm-thumbs { gap: 10px; }
+  .lm-info__book h3 { font-size: 30px; }
+  .lm-desc { font-size: 16px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .lm-buy { gap: 16px; justify-content: space-between; }
+  .lm-price { font-size: 30px; }
+  .lm-alllink { margin-top: 28px; }
+  .lm-plus, .lm-authors { padding: 72px 0; }
+  .lm-plus .lm-grid, .lm-authors .lm-grid { row-gap: 40px; }
+  .lm-plus__copy p, .lm-authors__copy p { font-size: 16px; }
+  .lm-plus__copy .lm-btn, .lm-authors__actions .lm-btn { width: 100%; }
+  .lm-calc { padding: 24px 20px; gap: 20px; margin-inline: -20px; }
+  .lm-calc__grid { align-items: end; gap: 16px; }
+  .lm-calc__grid p:first-child { font-size: 14px; }
   .lm-calc__fig { font-size: 34px; }
+  .lm-big { font-size: 112px; }
+  .lm-authors__fig p:not(.lm-big) { font-size: 17px; }
+  .lm-footer { padding: 48px 0 40px; }
+  .lm-footer__inner { gap: 32px; }
+  .lm-footer__top { gap: 24px; }
+  .lm-footer__logo img { height: 44px; }
+  .lm-footer__nav { gap: 6px 24px; }
+  .lm-footer__nav a { min-height: 44px; display: inline-flex; align-items: center; }
+  .lm-footer p { font-size: 15px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lm-home *, .lm-footer * { animation: none !important; transition: none !important; }
