@@ -7,6 +7,7 @@ import {eur} from '@/lib/money';
 import {admin} from '@/lib/supabase/admin';
 import {marketplaceLocale,marketplacePath} from '@/lib/marketplace';
 import {seoLocale,storefrontMetadata} from '@/lib/seo';
+import {FiltersToggle} from './filters-toggle';
 
 export async function generateMetadata({searchParams}:{searchParams:Promise<{market?:string}>}):Promise<Metadata>{
   return storefrontMetadata(seoLocale((await searchParams).market),'catalogue');
@@ -60,6 +61,7 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
   const keep=`ordine=${order}${query?`&q=${encodeURIComponent(query)}`:''}${onlyPlus?'&plus=1':''}`;
   const priceOptions=english?[['fino-5','Up to €5'],['5-10','€5 to €10'],['10-15','€10 to €15'],['oltre-15','Over €15']]:[['fino-5','Fino a 5 €'],['5-10','Da 5 a 10 €'],['10-15','Da 10 a 15 €'],['oltre-15','Oltre 15 €']];
   const ratingOptions=english?[['4','4 stars & up'],['3','3 stars & up']]:[['4','4 stelle e più'],['3','3 stelle e più']];
+  const activeFilters=[rawAuthor?.trim(),prezzo,valutazione,rawOrder&&rawOrder!=='popolari'?rawOrder:''].filter(Boolean).length;
   const rankLabel=(rank:number|undefined)=>rank&&rank<=10?(english?`No. ${rank} in sales`:`N° ${rank} per vendite`):'';
   return <main className="lm-cat">
     <div className="lm-wrap lm-cat__head">
@@ -67,6 +69,7 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
       <p className="lm-cat__count"><strong>{books.length}</strong> <span>{t.available}<br/>{onlyPlus?t.included:categoria?categoryLabel(categoria,locale):t.published}{searchSuffix}</span></p>
     </div>
     <div className="lm-wrap">
+      <FiltersToggle label={english?'Filters and sorting':'Filtri e ordinamento'} active={activeFilters} initiallyOpen={activeFilters>0}>
       <form className="lm-cat__filters" action={local('/catalogo')}>
         <input type="hidden" name="q" value={query}/>{categoria&&<input type="hidden" name="categoria" value={categoria}/>}{onlyPlus&&<input type="hidden" name="plus" value="1"/>}
         <div className="lm-field lm-field--wide"><label htmlFor="autore">{t.author}</label><input id="autore" name="autore" defaultValue={rawAuthor} placeholder={t.searchAuthor}/></div>
@@ -75,6 +78,7 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
         <div className="lm-field"><label htmlFor="ordine">{t.sort}</label><select id="ordine" name="ordine" defaultValue={order}><option value="popolari">{t.bestSelling}</option><option value="recensiti">{t.mostReviewed}</option><option value="novita">{t.newest}</option><option value="prezzo-crescente">{t.lowPrice}</option><option value="prezzo-decrescente">{t.highPrice}</option></select></div>
         <button className="lm-btn lm-btn--ink" type="submit">{t.apply}</button>
       </form>
+      </FiltersToggle>
       <div className="lm-cat__layout">
         <nav className="lm-cat__genres" aria-label={t.browse}>
           <p className="lm-cat__genres-title">{t.browse}</p>
@@ -87,7 +91,7 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
         <section aria-label={t.published}>
           {books.length>0&&<div className="lm-cat__grid">{books.map((book:any)=>{const image=coverUrl(book.cover_path),stat=stats.get(book.id),reviews=Number(stat?.review_count??0),rating=Number(stat?.average_rating??0);const profile=Array.isArray(book.profiles)?book.profiles[0]:book.profiles;const href=local(`/ebook/${book.slug}`);const rank=rankLabel(bsr.get(book.id));return <article className="lm-card" key={book.id}>
             <Link className="lm-card__cover" href={href} tabIndex={-1} aria-hidden="true">{image?<img src={image} alt="" loading="lazy"/>:<span>{english?'Cover coming soon':'Copertina in arrivo'}</span>}</Link>
-            <p className="lm-card__meta">{[categoryLabel(book.category,locale)||t.book,book.plus_enabled?t.plusIncluded:'',rank].filter(Boolean).join(' · ')}</p>
+            <p className="lm-card__meta"><span>{categoryLabel(book.category,locale)||t.book}</span>{book.plus_enabled&&<span> · {t.plusIncluded}</span>}{rank&&<span className="lm-card__rank"> · {rank}</span>}</p>
             <h2><Link href={href}>{book.title}</Link></h2>
             {book.subtitle&&<p className="lm-card__sub">{book.subtitle}</p>}
             <p className="lm-card__author">{t.by} {profile?.display_name||(english?'Author':'Autore')}</p>

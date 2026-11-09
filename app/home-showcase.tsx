@@ -114,7 +114,7 @@ export function HomeShowcase({bestSellers,mostReviewed,newReleases,plusPicks,loc
           <p className="lm-desc">{shorten(current.description)}</p>
           <div className="lm-buy"><span className="lm-price">{eur(current.price_cents)}</span><Link className="lm-btn lm-btn--gold" href={href}>{en?'Discover the book':'Scopri il libro'} <span aria-hidden="true">→</span></Link></div>
         </div>
-        <div>
+        <div className="lm-info__thumbs">
           <div className="lm-thumbs">
             {books.map((book,i)=><button key={`${view}-${book.id}`} type="button" className={`lm-thumb${i===index?' is-on':''}`} aria-pressed={i===index} aria-label={`${en?'Show':'Mostra'} ${book.title}`} onClick={()=>choose(i)} onMouseEnter={()=>choose(i)} onFocus={()=>choose(i)}>
               {book.cover?<img src={book.cover} alt=""/>:<span>{book.title}</span>}
