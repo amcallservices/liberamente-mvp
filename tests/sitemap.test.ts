@@ -44,6 +44,14 @@ describe('public sitemap',()=>{
   it('excludes private routes in both languages and declares the public sitemap',()=>{
     const result=robots();
     expect(result.sitemap).toBe('https://liberamente.site/sitemap.xml');
-    expect(result.rules).toMatchObject({disallow:expect.arrayContaining(['/admin','/en/admin','/lettore','/en/lettore','/api/','/en/api/'])});
+    const rules=result.rules as Array<{userAgent:string;allow:string;disallow:string[]}>;
+    expect(rules[0]).toMatchObject({userAgent:'*',disallow:expect.arrayContaining(['/admin','/en/admin','/lettore','/en/lettore','/api/','/en/api/','/anteprima-grafica'])});
+  });
+
+  it('nomina i crawler delle AI e li lascia leggere le pagine pubbliche ma non le aree private',()=>{
+    const rules=robots().rules as Array<{userAgent:string;allow:string;disallow:string[]}>;
+    const names=rules.map(rule=>rule.userAgent);
+    expect(names).toEqual(expect.arrayContaining(['GPTBot','ClaudeBot','PerplexityBot','Google-Extended']));
+    rules.forEach(rule=>{expect(rule.allow).toBe('/');expect(rule.disallow).toContain('/lettore');});
   });
 });
