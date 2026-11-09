@@ -67,3 +67,31 @@ export async function previewPdfUrl(authorId:string,bookId:string):Promise<strin
     return null;
   }
 }
+
+const failedAttempts=new Map<string,number>();
+const RETRY_AFTER_MS=10*60*1000;
+
+/**
+ * Restituisce il link all'anteprima impaginata e, per i libri pubblicati prima
+ * di questa funzione, la crea alla prima visita: così non serve nessuna azione
+ * dell'autore. Se non è possibile crearla, restituisce null e la pagina mostra
+ * l'anteprima di testo come prima.
+ */
+export async function ensurePreviewPdfUrl(book:{id:string;author_id:string;file_path?:string|null;file_mime_type?:string|null;pageCount?:number|null}):Promise<string|null>{
+  const existing=await previewPdfUrl(book.author_id,book.id);
+  if(existing)return existing;
+  if(!book.file_path||book.file_mime_type!=='application/pdf')return null;
+  if(book.pageCount&&book.pageCount<PREVIEW_FIRST_PAGE)return null;
+  const lastFailure=failedAttempts.get(book.id);
+  if(lastFailure&&Date.now()-lastFailure<RETRY_AFTER_MS)return null;
+  try{
+    const {data:file}=await admin().storage.from('ebooks').download(book.file_path);
+    const created=file?await storePreviewPdf(book.author_id,book.id,Buffer.from(await file.arrayBuffer())):false;
+    if(!created){failedAttempts.set(book.id,Date.now());return null;}
+  }catch(error){
+    console.error('Creazione automatica dell’anteprima PDF non riuscita',error);
+    failedAttempts.set(book.id,Date.now());
+    return null;
+  }
+  return previewPdfUrl(book.author_id,book.id);
+}
