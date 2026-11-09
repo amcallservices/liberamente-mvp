@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {createClient} from '@/lib/supabase/server';
 import {admin} from '@/lib/supabase/admin';
 import {analyzeEbookText,getPdfPageCount} from '@/lib/reading-extraction';
+import {storePreviewPdf} from '@/lib/preview-pdf';
 
 export async function POST(req:Request,{params}:{params:Promise<{bookId:string}>}){
   const {bookId}=await params;const body=await req.json().catch(()=>null) as {kind?:string;path?:string;fileName?:string;contentType?:string;size?:number}|null;
@@ -14,10 +15,12 @@ export async function POST(req:Request,{params}:{params:Promise<{bookId:string}>
   let pageCount:number|null=null;
   let readingReady=false;
   let readingWarning:string|null=null;
+  let manuscriptBuffer:Buffer|null=null;
   if(body.kind==='manuscript'){
     const {data:file}=await admin().storage.from('ebooks').download(body.path);
     if(file){
       const buffer=Buffer.from(await file.arrayBuffer());
+      manuscriptBuffer=buffer;
       pageCount=await getPdfPageCount(buffer);
       const analysis=await analyzeEbookText(buffer,body.contentType);
       if(analysis.ok){
@@ -41,6 +44,10 @@ export async function POST(req:Request,{params}:{params:Promise<{bookId:string}>
   }else if(body.kind==='manuscript'){
     // Evita che una vecchia anteprima resti collegata a un PDF sostituito e non leggibile.
     await s.from('book_reading_content').delete().eq('book_id',bookId).eq('author_id',user.id);
+  }
+  if(body.kind==='manuscript'&&extracted&&manuscriptBuffer){
+    const {data:previewState}=await s.from('book_reading_content').select('preview_enabled').eq('book_id',bookId).eq('author_id',user.id).maybeSingle();
+    if(previewState?.preview_enabled)await storePreviewPdf(user.id,bookId,manuscriptBuffer);
   }
   return NextResponse.json({ok:true,readingReady,pageCount,readingWarning});
 }

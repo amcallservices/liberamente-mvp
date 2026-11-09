@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractPdfPage } from '@/lib/reading-extraction';
+import { createPreviewPdf } from '@/lib/preview-pdf';
 import { isPlusActive } from '@/lib/plus';
 import { admin } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -33,7 +34,14 @@ export async function GET(request: NextRequest) {
 
   const { data: file, error: fileError } = await db.storage.from('ebooks').download(book.file_path);
   if (fileError || !file) return NextResponse.json({ error: 'Impossibile caricare il contenuto protetto.' }, { status: 500 });
-  const text = await extractPdfPage(Buffer.from(await file.arrayBuffer()), pageNumber);
+  const pdfBuffer = Buffer.from(await file.arrayBuffer());
+  // ?format=pdf: la stessa pagina, ma presa dal PDF originale (immagini e caratteri corretti).
+  if (request.nextUrl.searchParams.get('format') === 'pdf') {
+    const pagePdf = await createPreviewPdf(pdfBuffer, pageNumber, pageNumber);
+    if (!pagePdf) return NextResponse.json({ error: 'Impossibile preparare la pagina originale.' }, { status: 422 });
+    return new NextResponse(Buffer.from(pagePdf), { headers: { 'Content-Type': 'application/pdf', 'Cache-Control': 'private, no-store' } });
+  }
+  const text = await extractPdfPage(pdfBuffer, pageNumber);
   if (!text) return NextResponse.json({ error: 'Questa pagina non contiene testo leggibile.' }, { status: 422 });
   return NextResponse.json({ pageNumber, totalPages, text }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

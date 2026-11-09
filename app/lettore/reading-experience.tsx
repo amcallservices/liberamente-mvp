@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {readerBlocksFromText,speechChunksFromBlocks,type ReaderBlock} from '@/lib/reader-format';
 
-type Props={title:string;text:string;mode:'preview'|'full';purchaseId?:string;fileMimeType?:string|null;plusBookId?:string};
+type Props={title:string;text:string;mode:'preview'|'full';purchaseId?:string;fileMimeType?:string|null;plusBookId?:string;previewPdfUrl?:string|null};
 type Chapter={title:string;blockIndex:number};
 
 function chaptersFor(blocks:ReaderBlock[]):Chapter[]{
@@ -13,7 +13,7 @@ function chaptersFor(blocks:ReaderBlock[]):Chapter[]{
   return chapters;
 }
 
-export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusBookId}:Props){
+export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusBookId,previewPdfUrl}:Props){
   const blocks=useMemo(()=>readerBlocksFromText(text),[text]);
   const chunks=useMemo(()=>speechChunksFromBlocks(blocks),[blocks]);
   const chapters=useMemo(()=>chaptersFor(blocks),[blocks]);
@@ -71,6 +71,7 @@ export function ReadingExperience({title,text,mode,purchaseId,fileMimeType,plusB
       <label>Velocità<select value={rate} onChange={event=>setRate(event.target.value)}><option value="0.8">Lenta</option><option value="1">Normale</option><option value="1.15">Rapida</option></select></label>
       <div className="reading-controls"><button type="button" onClick={()=>speakFromBlock(selectedBlock)}>Ascolta da qui</button><button type="button" className="button alt" onClick={togglePause} disabled={activeBlock===null&&!playing}>{playing?'Pausa':'Riprendi'}</button><button type="button" className="button alt" onClick={stop}>Ferma</button></div>
     </div>
+    {mode==='preview'&&previewPdfUrl&&<section className="original-document preview-document"><div><strong>Le pagine originali dell’estratto</strong><p>Le pagine 20–30 del libro, con immagini e impaginazione come nell’edizione originale.</p></div><a className="button alt" href={previewPdfUrl} target="_blank" rel="noopener noreferrer">Apri a schermo intero</a><div className="pdf-reader"><iframe title={`Estratto impaginato di ${title}`} src={`${previewPdfUrl}#toolbar=0&navpanes=0&view=FitH`}/></div></section>}
     {hasOriginalPdf&&<section className="original-document"><div><strong>Edizione impaginata</strong><p>Leggi il PDF originale con immagini, pagine e formattazione identiche al libro acquistato.</p></div>{!documentUrl?<button type="button" onClick={openOriginal} disabled={documentLoading}>{documentLoading?'Apertura in corso…':'Apri il libro impaginato'}</button>:<div className="pdf-reader"><label>Vai alla pagina<input type="number" min="1" inputMode="numeric" value={pdfPage} onChange={event=>setPdfPage(event.target.value.replace(/\D/g,'')||'1')}/></label><iframe title={`Documento originale di ${title}`} src={`${documentUrl}#page=${pdfPage}&view=FitH`}/></div>}{documentError&&<p className="notice">{documentError}</p>}</section>}
     <p className="reading-help">Scegli prima un capitolo o un punto di partenza per la voce. Il testo accessibile è disponibile qui sotto; per i PDF l’edizione impaginata conserva pagine e immagini dell’originale.</p>
     <article className="reading-text" aria-label={`Testo di ${title}`}>{blocks.map((block,index)=>block.kind==='heading'?<h3 id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text}`}>{block.text}</h3>:<p id={`reader-block-${mode}-${index}`} className={activeBlock===index?'is-reading':''} key={`${index}-${block.text.slice(0,24)}`}>{block.text}</p>)}</article>
