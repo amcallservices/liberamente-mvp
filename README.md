@@ -49,7 +49,7 @@ Le notifiche della revisione usano Brevo: l'amministratore riceve un'email quand
 1. Inizializza Git e crea un repository GitHub privato: `git init`, `git add .`, `git commit -m "Initial ebook marketplace MVP"`.
 2. Collega il repository in Vercel e importa le stesse variabili d’ambiente: quelle senza `NEXT_PUBLIC_` restano server-only.
 3. Imposta `NEXT_PUBLIC_SITE_URL` sul dominio Vercel e aggiorna callback Supabase/Stripe.
-4. `vercel.json` disattiva volontariamente i deploy Git automatici: abilitarli richiede una decisione esplicita.
+4. `vercel.json` salta la build di tutti i rami diversi da `main` (`ignoreCommand`): solo l'unione su `main` pubblica il sito, quindi i rami e le pull request non creano deploy da soli.
 
 ## Note di sicurezza
 
