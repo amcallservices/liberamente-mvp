@@ -22,3 +22,15 @@
 .reading-text h3{margin:2.4em 0 .8em;color:#183c2b;font:700 clamp(23px,3vw,31px)/1.18 Georgia,serif}.reading-text h3:first-child{margin-top:0}.reading-text p{max-width:70ch;margin:0 0 1.15em}.reading-text .is-reading{background:#f0cd81;box-shadow:0 1px 0 #d5a94c}
 .reader-book-item .reading-experience{max-width:760px;margin-top:20px}.reader-book-item .reading-text{max-height:420px}
 @media(max-width:620px){.reading-preview{margin-top:42px;padding:27px 18px}.reading-preview:before{right:16px}.reading-preview h2{font-size:31px;padding-right:20px}.reading-toolbar{grid-template-columns:1fr}.reading-experience summary{align-items:flex-start;flex-wrap:wrap}.reading-experience summary small{width:100%;margin-left:0}.original-document{grid-template-columns:1fr;padding:19px 14px}.original-document>button{width:100%}.pdf-reader iframe{height:62vh}.reading-text{max-height:385px;margin:0 14px 18px;padding:18px 16px 24px;font-size:17px}.reading-help{padding:14px}.reading-toolbar{padding:14px}.reading-controls button{flex:1}}
+/* Visualizzatore delle pagine PDF: si adatta alla larghezza dello schermo, anche sui telefoni */
+.pdf-pages{display:grid;gap:8px;min-width:0}
+.pdf-pages__bar{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#365246;font-size:12px;font-weight:700}
+.pdf-pages__zoom{display:flex;align-items:center;gap:8px}
+.pdf-pages__zoom .button{min-width:40px;min-height:38px;padding:0 10px;font-size:18px;line-height:1}
+.pdf-pages__zoom span{min-width:42px;text-align:center}
+.pdf-pages__scroll{max-height:min(80vh,900px);overflow:auto;padding:10px;border:1px solid #d9d3c4;background:#e5e0d5;overscroll-behavior:contain}
+.pdf-pages__inner{display:grid;gap:12px;margin:0 auto}
+.pdf-page{position:relative;width:100%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.18)}
+.pdf-page canvas{display:block;width:100%;height:100%}
+.pdf-page__label{position:absolute;right:8px;bottom:6px;padding:2px 7px;border-radius:999px;background:rgba(24,60,43,.72);color:#fff;font-size:11px;font-weight:700;pointer-events:none}
+@media(max-width:700px){.pdf-pages__scroll{max-height:none;overflow-x:auto;overflow-y:visible;padding:0;overscroll-behavior:auto}.pdf-pages__inner{gap:8px}.pdf-pages__bar{position:sticky;top:0;z-index:2;padding:6px 0;background:#f4f0e8}}
