@@ -8,5 +8,20 @@ export function SiteFooter(){
   const pathname=usePathname()||'/';
   const english=pathname==='/en'||pathname.startsWith('/en/');
   const locale=english?'en':'it';
-  return <footer className="site-footer"><div className="wrap footer-content"><p><strong>LIBERAMENTE.site – lo store di Scrittore.site</strong> · {english?'a home for independent ebooks. Secure payments, protected downloads.':'una casa per ebook indipendenti. Pagamenti sicuri, download protetti.'}</p><Link href={marketplacePath(locale,'/faq')}>{english?'Frequently asked questions':'Domande frequenti'}</Link></div></footer>;
+  const local=(path:string)=>marketplacePath(locale,path);
+  return <footer className="site-footer lm-footer">
+    <div className="lm-wrap lm-footer__inner">
+      <div className="lm-footer__top">
+        <Link href={local('/')} className="lm-footer__logo"><img src="/liberamente-logo.png" alt="LIBERAMENTE.site – lo store di Scrittore.site" width={168} height={56}/></Link>
+        <nav aria-label={english?'Footer':'Piè di pagina'} className="lm-footer__nav">
+          <Link href={local('/catalogo')}>{english?'Catalogue':'Catalogo'}</Link>
+          <Link href={local('/plus')}>LIBERAMENTE Plus</Link>
+          <Link href={local('/lettore')}>{english?'Reader area':'Area lettori'}</Link>
+          <Link href={local('/autore')}>{english?'Author area':'Area autori'}</Link>
+          <Link href={local('/faq')}>{english?'Frequently asked questions':'Domande frequenti'}</Link>
+        </nav>
+      </div>
+      <p>{english?'A home for independent ebooks. Pay securely by card or PayPal, and every purchase stays in your library.':'Una casa per gli ebook indipendenti. Paghi con carta o PayPal in modo sicuro, e ogni acquisto resta nella tua libreria.'}</p>
+    </div>
+  </footer>;
 }
