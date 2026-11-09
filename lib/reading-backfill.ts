@@ -2,8 +2,9 @@ import {admin} from '@/lib/supabase/admin';
 import {extractEbookText} from '@/lib/reading-extraction';
 import {isCurrentReaderText} from '@/lib/reader-format';
 
-export async function preparePurchasedBookReading(book:{id?:string;author_id?:string;file_path?:string|null;file_mime_type?:string|null}){
-  if(!book.id||!book.author_id||!book.file_path)return;
+export async function preparePurchasedBookReading(book?:{id?:string;author_id?:string;file_path?:string|null;file_mime_type?:string|null}|null){
+  // Un acquisto può avere il libro non leggibile (per esempio tornato in revisione): non deve mai rompere la libreria.
+  if(!book?.id||!book.author_id||!book.file_path)return;
   const client=admin();
   const {data:existing}=await client.from('book_reading_content').select('book_id,full_text').eq('book_id',book.id).maybeSingle();
   if(existing&&isCurrentReaderText(existing.full_text))return;
