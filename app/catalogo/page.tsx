@@ -8,6 +8,7 @@ import {admin} from '@/lib/supabase/admin';
 import {marketplaceLocale,marketplacePath} from '@/lib/marketplace';
 import {seoLocale,storefrontMetadata} from '@/lib/seo';
 import {FiltersToggle} from './filters-toggle';
+import {GenresToggle} from './genres-toggle';
 
 export async function generateMetadata({searchParams}:{searchParams:Promise<{market?:string}>}):Promise<Metadata>{
   return storefrontMetadata(seoLocale((await searchParams).market),'catalogue');
@@ -82,10 +83,12 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
       <div className="lm-cat__layout">
         <nav className="lm-cat__genres" aria-label={t.browse}>
           <p className="lm-cat__genres-title">{t.browse}</p>
+          <GenresToggle total={availableCategories.length} label={english?'All genres':'Tutti i generi'} closeLabel={english?'Fewer genres':'Meno generi'}>
           <ul>
-            <li><Link className={!categoria?'is-active':''} aria-current={!categoria?'page':undefined} href={local(`/catalogo?${keep}`)}><span>{t.all}</span><em>{categorySource.length}</em></Link></li>
-            {availableCategories.map(category=><li key={category}><Link className={categoria===category?'is-active':''} aria-current={categoria===category?'page':undefined} href={local(`/catalogo?categoria=${encodeURIComponent(category)}&${keep}`)}><span>{categoryLabel(category,locale)}</span><em>{categoryCounts.get(category)}</em></Link></li>)}
+            <li className={!categoria?'is-current':''}><Link className={!categoria?'is-active':''} aria-current={!categoria?'page':undefined} href={local(`/catalogo?${keep}`)}><span>{t.all}</span><em>{categorySource.length}</em></Link></li>
+            {availableCategories.map(category=><li key={category} className={categoria===category?'is-current':''}><Link className={categoria===category?'is-active':''} aria-current={categoria===category?'page':undefined} href={local(`/catalogo?categoria=${encodeURIComponent(category)}&${keep}`)}><span>{categoryLabel(category,locale)}</span><em>{categoryCounts.get(category)}</em></Link></li>)}
           </ul>
+          </GenresToggle>
           {!availableCategories.length&&<p className="lm-cat__note">{t.newGenres}</p>}
         </nav>
         <section aria-label={t.published}>
