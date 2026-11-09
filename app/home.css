@@ -1,6 +1,6 @@
 /* Home "vetrina" redesign (tasteskill). Scoped to .lm-home / .lm-footer so the
    rest of the site keeps its current look. */
-.lm-home, .lm-footer { --lm-ink: #142533; --lm-paper: #f6f3eb; --lm-sand: #e9e3d5; --lm-tone: #ece7da; --lm-gold: #f0c462; --lm-green: #155440; --lm-muted: #4a5966; --lm-serif: Georgia, "Times New Roman", serif; }
+.lm-home, .lm-footer, .lm-cat { --lm-ink: #142533; --lm-paper: #f6f3eb; --lm-sand: #e9e3d5; --lm-tone: #ece7da; --lm-gold: #f0c462; --lm-green: #155440; --lm-muted: #4a5966; --lm-serif: Georgia, "Times New Roman", serif; }
 .lm-home { background: var(--lm-paper); color: var(--lm-ink); }
 .lm-wrap { max-width: 1280px; margin: 0 auto; padding-inline: 40px; }
 .lm-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; }

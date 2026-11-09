@@ -11,6 +11,7 @@ import './lettore/reading.css';
 import './faq/faq.css';
 import './editorial-refresh.css';
 import './home.css';
+import './catalogo/catalog.css';
 import type {Metadata} from 'next';
 import {createClient} from '@/lib/supabase/server';
 import {SiteHeader} from '@/components/site-header';

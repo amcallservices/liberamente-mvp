@@ -56,22 +56,48 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
     if(order==='recensiti')return Number(right?.review_count??0)-Number(left?.review_count??0)||Number(right?.average_rating??0)-Number(left?.average_rating??0)||Number(right?.sales_count??0)-Number(left?.sales_count??0)||a.title.localeCompare(b.title,'it');
     return Number(right?.sales_count??0)-Number(left?.sales_count??0)||Number(right?.review_count??0)-Number(left?.review_count??0)||Number(right?.average_rating??0)-Number(left?.average_rating??0)||a.title.localeCompare(b.title,'it');
   });
-  const searchSuffix=query?` · risultati pertinenti per “${query}”`:'';
-  return <main className="wrap">
-    <p className="eyebrow">{onlyPlus?t.plus:t.independent}</p>
-    <h1>{onlyPlus?t.plusTitle:t.title}</h1>
-    <div className="catalog-layout">
-      <aside className="category-panel" aria-label="Categorie del catalogo">
-        <div className="category-panel-heading"><strong>{t.browse}</strong><span>{onlyPlus?t.plusAvailable:t.genres}</span></div>
-        <Link className={`category-link ${!categoria?'active-category':''}`} href={local(`/catalogo?ordine=${order}${query?`&q=${encodeURIComponent(query)}`:''}${onlyPlus?'&plus=1':''}`)}><span>{t.all}</span><em>{categorySource.length}</em></Link>
-        <div className="category-list">{availableCategories.map(category=><Link className={`category-link ${categoria===category?'active-category':''}`} key={category} href={local(`/catalogo?categoria=${encodeURIComponent(category)}&ordine=${order}${query?`&q=${encodeURIComponent(query)}`:''}${onlyPlus?'&plus=1':''}`)}><span>{categoryLabel(category,locale)}</span><em>{categoryCounts.get(category)}</em></Link>)}</div>
-        {!availableCategories.length&&<p className="category-empty">{t.newGenres}</p>}
-      </aside>
-      <section>
-        <div className="catalog-result"><div><p>{onlyPlus?t.included:categoria?`${t.category}: ${categoryLabel(categoria,locale)}`:t.published}{searchSuffix}</p><span>{books.length} {t.available}</span></div><form className="catalog-sort catalog-advanced-filters" action={local('/catalogo')}><input type="hidden" name="q" value={query}/>{categoria&&<input type="hidden" name="categoria" value={categoria}/>}{onlyPlus&&<input type="hidden" name="plus" value="1"/>}<label htmlFor="autore">{t.author}</label><input id="autore" name="autore" defaultValue={rawAuthor} placeholder={t.searchAuthor}/><label htmlFor="prezzo">{t.price}</label><select id="prezzo" name="prezzo" defaultValue={prezzo??''}><option value="">{t.anyPrice}</option><option value="fino-5">Up to €5</option><option value="5-10">€5 to €10</option><option value="10-15">€10 to €15</option><option value="oltre-15">Over €15</option></select><label htmlFor="valutazione">{t.rating}</label><select id="valutazione" name="valutazione" defaultValue={valutazione??''}><option value="">{t.allRatings}</option><option value="4">4 stars &amp; up</option><option value="3">3 stars &amp; up</option></select><label htmlFor="ordine">{t.sort}</label><select id="ordine" name="ordine" defaultValue={order}><option value="popolari">{t.bestSelling}</option><option value="recensiti">{t.mostReviewed}</option><option value="novita">{t.newest}</option><option value="prezzo-crescente">{t.lowPrice}</option><option value="prezzo-decrescente">{t.highPrice}</option></select><button>{t.apply}</button></form></div>
-        <div className="grid catalogue">{books.map((book:any)=>{const image=coverUrl(book.cover_path),stat=stats.get(book.id),reviews=Number(stat?.review_count??0),rating=Number(stat?.average_rating??0);const profile=Array.isArray(book.profiles)?book.profiles[0]:book.profiles;return <article className="card book-card" key={book.id}>{image?<img className="cover-image" src={image} alt={`${english?'Cover of':'Copertina di'} ${book.title}`}/>:<div className="cover">{english?'Cover coming soon':'Copertina in arrivo'}</div>}<p className="eyebrow">{book.plus_enabled?`${t.plusIncluded} · `:''}{categoryLabel(book.category,locale)||t.book} · BSR #{bsr.get(book.id)}</p><p className="muted">{t.by} {profile?.display_name|| (english?'Author':'Autore')}</p><h2>{book.title}</h2>{book.subtitle&&<p className="subtitle">{book.subtitle}</p>}<p className="rating">{reviews?`★ ${rating.toLocaleString(english?'en-US':'it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})} · ${reviews} ${english?(reviews===1?'review':'reviews'):`recension${reviews===1?'e':'i'}`}`:t.newReview}</p><p className="clamp">{book.description}</p><div className="card-footer"><span className="price">{eur(book.price_cents)}</span><Link className="button" href={local(`/ebook/${book.slug}`)}>{t.discover}</Link></div></article>})}</div>
-        {!books.length&&<div className="empty"><h2>{onlyPlus?t.noPlus:t.noBooks}</h2><p>{onlyPlus?t.noPlusCopy:t.noBooksCopy}</p><Link className="button alt" href={local('/catalogo')}>{onlyPlus?t.catalogue:t.showAll}</Link></div>}
-      </section>
+  const searchSuffix=query?(english?` · results for “${query}”`:` · risultati per “${query}”`):'';
+  const keep=`ordine=${order}${query?`&q=${encodeURIComponent(query)}`:''}${onlyPlus?'&plus=1':''}`;
+  const priceOptions=english?[['fino-5','Up to €5'],['5-10','€5 to €10'],['10-15','€10 to €15'],['oltre-15','Over €15']]:[['fino-5','Fino a 5 €'],['5-10','Da 5 a 10 €'],['10-15','Da 10 a 15 €'],['oltre-15','Oltre 15 €']];
+  const ratingOptions=english?[['4','4 stars & up'],['3','3 stars & up']]:[['4','4 stelle e più'],['3','3 stelle e più']];
+  const rankLabel=(rank:number|undefined)=>rank&&rank<=10?(english?`No. ${rank} in sales`:`N° ${rank} per vendite`):'';
+  return <main className="lm-cat">
+    <div className="lm-wrap lm-cat__head">
+      <div><p className="lm-cat__kicker">{onlyPlus?t.plus:t.independent}</p><h1>{onlyPlus?t.plusTitle:t.title}</h1></div>
+      <p className="lm-cat__count"><strong>{books.length}</strong> <span>{t.available}<br/>{onlyPlus?t.included:categoria?categoryLabel(categoria,locale):t.published}{searchSuffix}</span></p>
+    </div>
+    <div className="lm-wrap">
+      <form className="lm-cat__filters" action={local('/catalogo')}>
+        <input type="hidden" name="q" value={query}/>{categoria&&<input type="hidden" name="categoria" value={categoria}/>}{onlyPlus&&<input type="hidden" name="plus" value="1"/>}
+        <div className="lm-field lm-field--wide"><label htmlFor="autore">{t.author}</label><input id="autore" name="autore" defaultValue={rawAuthor} placeholder={t.searchAuthor}/></div>
+        <div className="lm-field"><label htmlFor="prezzo">{t.price}</label><select id="prezzo" name="prezzo" defaultValue={prezzo??''}><option value="">{t.anyPrice}</option>{priceOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div>
+        <div className="lm-field"><label htmlFor="valutazione">{t.rating}</label><select id="valutazione" name="valutazione" defaultValue={valutazione??''}><option value="">{t.allRatings}</option>{ratingOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div>
+        <div className="lm-field"><label htmlFor="ordine">{t.sort}</label><select id="ordine" name="ordine" defaultValue={order}><option value="popolari">{t.bestSelling}</option><option value="recensiti">{t.mostReviewed}</option><option value="novita">{t.newest}</option><option value="prezzo-crescente">{t.lowPrice}</option><option value="prezzo-decrescente">{t.highPrice}</option></select></div>
+        <button className="lm-btn lm-btn--ink" type="submit">{t.apply}</button>
+      </form>
+      <div className="lm-cat__layout">
+        <nav className="lm-cat__genres" aria-label={t.browse}>
+          <p className="lm-cat__genres-title">{t.browse}</p>
+          <ul>
+            <li><Link className={!categoria?'is-active':''} aria-current={!categoria?'page':undefined} href={local(`/catalogo?${keep}`)}><span>{t.all}</span><em>{categorySource.length}</em></Link></li>
+            {availableCategories.map(category=><li key={category}><Link className={categoria===category?'is-active':''} aria-current={categoria===category?'page':undefined} href={local(`/catalogo?categoria=${encodeURIComponent(category)}&${keep}`)}><span>{categoryLabel(category,locale)}</span><em>{categoryCounts.get(category)}</em></Link></li>)}
+          </ul>
+          {!availableCategories.length&&<p className="lm-cat__note">{t.newGenres}</p>}
+        </nav>
+        <section aria-label={t.published}>
+          {books.length>0&&<div className="lm-cat__grid">{books.map((book:any)=>{const image=coverUrl(book.cover_path),stat=stats.get(book.id),reviews=Number(stat?.review_count??0),rating=Number(stat?.average_rating??0);const profile=Array.isArray(book.profiles)?book.profiles[0]:book.profiles;const href=local(`/ebook/${book.slug}`);const rank=rankLabel(bsr.get(book.id));return <article className="lm-card" key={book.id}>
+            <Link className="lm-card__cover" href={href} tabIndex={-1} aria-hidden="true">{image?<img src={image} alt="" loading="lazy"/>:<span>{english?'Cover coming soon':'Copertina in arrivo'}</span>}</Link>
+            <p className="lm-card__meta">{[categoryLabel(book.category,locale)||t.book,book.plus_enabled?t.plusIncluded:'',rank].filter(Boolean).join(' · ')}</p>
+            <h2><Link href={href}>{book.title}</Link></h2>
+            {book.subtitle&&<p className="lm-card__sub">{book.subtitle}</p>}
+            <p className="lm-card__author">{t.by} {profile?.display_name||(english?'Author':'Autore')}</p>
+            <p className="lm-card__rating">{reviews?`★ ${rating.toLocaleString(english?'en-US':'it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})} · ${reviews} ${english?(reviews===1?'review':'reviews'):`recension${reviews===1?'e':'i'}`}`:t.newReview}</p>
+            <p className="lm-card__desc">{book.description}</p>
+            <div className="lm-card__foot"><span className="lm-card__price">{eur(book.price_cents)}</span><Link className="lm-card__link" href={href}>{t.discover} <span aria-hidden="true">→</span></Link></div>
+          </article>})}</div>}
+          {!books.length&&<div className="lm-cat__empty"><h2>{onlyPlus?t.noPlus:t.noBooks}</h2><p>{onlyPlus?t.noPlusCopy:t.noBooksCopy}</p><Link className="lm-btn lm-btn--ink" href={local('/catalogo')}>{onlyPlus?t.catalogue:t.showAll}</Link></div>}
+        </section>
+      </div>
     </div>
   </main>;
 }
