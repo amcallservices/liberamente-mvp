@@ -1,0 +1,75 @@
+/* Catalogue redesign (tasteskill). Scoped to .lm-cat. */
+.lm-cat { background: var(--lm-paper); color: var(--lm-ink); padding: 96px 0 160px; }
+.lm-cat h1, .lm-cat h2 { font-family: var(--lm-serif); font-weight: 500; letter-spacing: -0.02em; color: var(--lm-ink); margin: 0; max-width: none; }
+.lm-cat p { margin: 0; }
+.lm-cat a:focus-visible, .lm-cat button:focus-visible, .lm-cat input:focus-visible, .lm-cat select:focus-visible { outline: 2px solid var(--lm-ink); outline-offset: 3px; }
+
+.lm-cat__head { border: 0; background: none; display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.lm-cat__kicker { font-size: 17px; font-weight: 600; margin-bottom: 16px !important; }
+.lm-cat__head h1 { font-size: clamp(44px, 6vw, 80px); line-height: .98; max-width: 14ch; }
+.lm-cat__count { display: flex; align-items: flex-end; gap: 16px; }
+.lm-cat__count strong { font-family: var(--lm-serif); font-weight: 500; font-size: clamp(64px, 8vw, 112px); line-height: .85; }
+.lm-cat__count span { font-size: 16px; line-height: 1.45; color: var(--lm-muted); padding-bottom: 6px; }
+
+.lm-cat__filters { max-width: none; margin: 64px 0 72px; padding: 24px; background: var(--lm-tone); display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 20px; }
+.lm-field { display: flex; flex-direction: column; gap: 8px; flex: 1 1 170px; min-width: 0; }
+.lm-field--wide { flex: 2 1 240px; }
+.lm-cat .lm-field label { font-size: 14px; font-weight: 600; }
+.lm-cat .lm-field input, .lm-cat .lm-field select { width: 100%; height: 48px; margin: 0; padding: 0 14px; border: 0; border-radius: 0; background: #fffdf8; color: var(--lm-ink); font: 16px Inter, ui-sans-serif, system-ui, sans-serif; }
+.lm-cat .lm-cat__filters .lm-btn { min-height: 48px; flex: 0 0 auto; }
+
+.lm-cat__layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 56px; align-items: start; }
+.lm-cat__genres { display: block; position: sticky; top: 24px; min-width: 0; }
+.lm-cat__genres-title { font-family: var(--lm-serif); font-size: 24px; margin-bottom: 16px !important; }
+.lm-cat__genres ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.lm-cat__genres a { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 44px; padding: 8px 12px; color: var(--lm-ink); text-decoration: none; font-size: 15px; font-weight: 500; transition: background-color .15s ease, padding .2s ease; }
+.lm-cat__genres a:hover { background: var(--lm-tone); padding-left: 16px; }
+.lm-cat__genres a.is-active { background: var(--lm-ink); color: var(--lm-paper); }
+.lm-cat__genres em { font-style: normal; font-size: 14px; color: var(--lm-muted); font-variant-numeric: tabular-nums; }
+.lm-cat__genres a.is-active em { color: var(--lm-gold); }
+.lm-cat__note { font-size: 15px; color: var(--lm-muted); }
+
+.lm-cat__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 64px 32px; }
+.lm-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lm-card__cover { display: flex; justify-content: center; align-items: center; background: var(--lm-sand); padding: 28px 24px; margin-bottom: 10px; }
+.lm-card__cover img, .lm-card__cover span { width: 78%; aspect-ratio: 2 / 3; object-fit: cover; display: block; border-radius: 0; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+.lm-card__cover span { display: grid; place-items: center; background: var(--lm-ink); color: var(--lm-paper); font: 500 15px var(--lm-serif); text-align: center; padding: 12px; }
+.lm-card:hover .lm-card__cover img, .lm-card:hover .lm-card__cover span { transform: translateY(-8px) rotate(-1.5deg); }
+.lm-card__meta { font-size: 14px; color: var(--lm-muted); }
+.lm-card h2 { font-size: 24px; line-height: 1.12; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.lm-card h2 a { color: var(--lm-ink); text-decoration: none; }
+.lm-card h2 a:hover { color: var(--lm-green); }
+.lm-card__sub { font-size: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.lm-card__author { font-size: 15px; font-weight: 600; }
+.lm-card__rating { font-size: 14px; color: var(--lm-muted); }
+.lm-card__desc { font-size: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.lm-card__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: auto; padding-top: 8px; }
+.lm-card__price { font-family: var(--lm-serif); font-size: 26px; }
+.lm-card__link { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; color: var(--lm-ink); text-decoration: underline; text-underline-offset: 4px; }
+.lm-card__link:hover { color: var(--lm-green); }
+
+.lm-cat__empty { background: var(--lm-tone); padding: 64px 48px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.lm-cat__empty h2 { font-size: 36px; }
+.lm-cat__empty p { font-size: 17px; }
+
+@media (max-width: 900px) {
+  .lm-cat { padding: 56px 0 96px; }
+  .lm-cat__filters { margin: 40px 0 32px; padding: 16px; gap: 12px; }
+  .lm-field { flex: 1 1 40%; }
+  .lm-field--wide { flex: 1 1 100%; }
+  .lm-cat .lm-cat__filters .lm-btn { flex: 1 1 40%; }
+  .lm-cat__layout { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .lm-cat__genres { position: static; }
+  .lm-cat__genres-title { font-size: 20px; }
+  .lm-cat__genres ul { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 4px; scroll-snap-type: x proximity; }
+  .lm-cat__genres li { flex: 0 0 auto; scroll-snap-align: start; }
+  .lm-cat__genres a { background: var(--lm-tone); white-space: nowrap; }
+  .lm-cat__genres a:hover { padding-left: 12px; }
+  .lm-cat__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 16px; }
+  .lm-card__cover { padding: 16px 12px; }
+  .lm-card h2 { font-size: 19px; }
+  .lm-card__desc { display: none; }
+  .lm-card__foot { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .lm-card__price { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { .lm-cat * { transition: none !important; } }
