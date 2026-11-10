@@ -16,6 +16,7 @@ const intro=`# LIBERAMENTE.site
 - [Catalogo ebook](${site}/catalogo): tutti i titoli pubblicati, con filtri per genere, prezzo e valutazione.
 - [LIBERAMENTE Plus](${site}/plus): lettura online dei titoli aderenti; il 60% del fondo autori distribuibile è ripartito in base alle pagine lette qualificate.
 - [Domande frequenti](${site}/faq): acquisti, download, rimborsi, royalty e pubblicazione.
+- [Blog](${site}/blog): guide per autori indipendenti (pubblicazione, royalty, ISBN, accessibilità, promozione) e per lettori di ebook. English: ${site}/en/blog
 - [English catalogue](${site}/en/catalogo): English-language ebooks by independent authors.
 - [Sitemap](${site}/sitemap.xml)
 

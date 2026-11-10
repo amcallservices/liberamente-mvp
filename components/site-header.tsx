@@ -20,6 +20,7 @@ export function SiteHeader({signedIn,isPrimaryAdmin,hasAuthorArea}:Props){
       <nav>
         <Link href={local('/catalogo')}>{text.catalogue}</Link>
         <Link href={local('/faq')}>FAQ</Link>
+        <Link href={local('/blog')}>Blog</Link>
         <Link href={local('/plus')}>LIBERAMENTE Plus</Link>
         <Link href={local('/lettore')}>{text.readers}</Link>
         <Link href={local('/autore')}>{text.authors}</Link>

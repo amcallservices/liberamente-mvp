@@ -2,6 +2,7 @@ import type {MetadataRoute} from 'next';
 import {admin} from '@/lib/supabase/admin';
 import {canonicalBookUrl} from '@/lib/book-seo';
 import {marketplaceLocale} from '@/lib/marketplace';
+import {blogPath,blogPosts} from '@/lib/blog';
 
 const siteUrl='https://liberamente.site';
 
@@ -26,9 +27,17 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
     {url:`${siteUrl}/en`,lastModified:new Date(),changeFrequency:'daily',priority:.9},
     {url:`${siteUrl}/en/catalogo`,lastModified:new Date(),changeFrequency:'daily',priority:.85},
     {url:`${siteUrl}/en/plus`,lastModified:new Date(),changeFrequency:'weekly',priority:.75},
-    {url:`${siteUrl}/en/faq`,lastModified:new Date(),changeFrequency:'monthly',priority:.65}
+    {url:`${siteUrl}/en/faq`,lastModified:new Date(),changeFrequency:'monthly',priority:.65},
+    {url:`${siteUrl}/blog`,lastModified:new Date(),changeFrequency:'weekly',priority:.8},
+    {url:`${siteUrl}/en/blog`,lastModified:new Date(),changeFrequency:'weekly',priority:.75}
   ];
-  return [...core,...(books??[]).map((book:any)=>({
+  const articles:MetadataRoute.Sitemap=(['it','en'] as const).flatMap(locale=>blogPosts(locale).map(post=>({
+    url:`${siteUrl}${blogPath(locale,post.slug)}`,
+    lastModified:new Date(`${post.updated}T12:00:00Z`),
+    changeFrequency:'monthly' as const,
+    priority:.7,
+  })));
+  return [...core,...articles,...(books??[]).map((book:any)=>({
     url:canonicalBookUrl(marketplaceLocale(book.marketplace_locale),book.slug),
     lastModified:new Date(book.updated_at??book.published_at??Date.now()),
     changeFrequency:'weekly' as const,
