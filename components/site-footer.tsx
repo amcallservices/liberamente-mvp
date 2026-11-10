@@ -18,6 +18,7 @@ export function SiteFooter(){
           <Link href={local('/plus')}>LIBERAMENTE Plus</Link>
           <Link href={local('/lettore')}>{english?'Reader area':'Area lettori'}</Link>
           <Link href={local('/autore')}>{english?'Author area':'Area autori'}</Link>
+          <Link href={local('/blog')}>Blog</Link>
           <Link href={local('/faq')}>{english?'Frequently asked questions':'Domande frequenti'}</Link>
         </nav>
       </div>

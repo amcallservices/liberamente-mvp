@@ -12,6 +12,7 @@ import './faq/faq.css';
 import './editorial-refresh.css';
 import './home.css';
 import './catalogo/catalog.css';
+import './blog/blog.css';
 import type {Metadata} from 'next';
 import {headers} from 'next/headers';
 import {createClient} from '@/lib/supabase/server';

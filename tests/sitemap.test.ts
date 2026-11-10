@@ -24,7 +24,13 @@ describe('public sitemap',()=>{
     expect(from).toHaveBeenCalledWith('books');
     expect(query.eq).toHaveBeenCalledWith('status','published');
     expect(query.select).toHaveBeenCalledWith('slug,updated_at,published_at,marketplace_locale');
-    expect(entries.slice(8).map(entry=>entry.url)).toEqual(['https://liberamente.site/ebook/italian','https://liberamente.site/en/ebook/english']);
+    const urls=entries.map(entry=>entry.url);
+    expect(urls.filter(url=>url.includes('/ebook/'))).toEqual(['https://liberamente.site/ebook/italian','https://liberamente.site/en/ebook/english']);
+    expect(urls).toContain('https://liberamente.site/blog');
+    expect(urls).toContain('https://liberamente.site/en/blog');
+    expect(urls).toContain('https://liberamente.site/blog/come-pubblicare-un-ebook');
+    expect(urls).toContain('https://liberamente.site/en/blog/how-to-publish-an-ebook');
+    expect(urls.filter(url=>/\/blog\/./.test(url))).toHaveLength(20);
   });
 
   it('includes publications beyond the first database page',async()=>{
@@ -32,7 +38,7 @@ describe('public sitemap',()=>{
       .mockResolvedValueOnce({data:[{slug:'last',marketplace_locale:'en'}],error:null});
     const entries=await sitemap();
     expect(query.range.mock.calls).toEqual([[0,999],[1000,1999]]);
-    expect(entries).toHaveLength(1009);
+    expect(entries.filter(entry=>entry.url.includes('/ebook/'))).toHaveLength(1001);
     expect(entries.at(-1)?.url).toBe('https://liberamente.site/en/ebook/last');
   });
 
