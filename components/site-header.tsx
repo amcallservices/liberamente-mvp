@@ -21,6 +21,7 @@ export function SiteHeader({signedIn,isPrimaryAdmin,hasAuthorArea}:Props){
         <Link href={local('/catalogo')}>{text.catalogue}</Link>
         <Link href={local('/faq')}>FAQ</Link>
         <Link href={local('/blog')}>Blog</Link>
+        <a href="https://selfpublishingitalia.site/" target="_blank" rel="noopener">Community <span aria-hidden="true">↗</span></a>
         <Link href={local('/plus')}>LIBERAMENTE Plus</Link>
         <Link href={local('/lettore')}>{text.readers}</Link>
         <Link href={local('/autore')}>{text.authors}</Link>
