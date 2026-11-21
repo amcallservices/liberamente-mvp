@@ -13,11 +13,14 @@ import './editorial-refresh.css';
 import './home.css';
 import './catalogo/catalog.css';
 import './blog/blog.css';
+import './ebook/book.css';
+import './theme.css';
 import type {Metadata} from 'next';
 import {headers} from 'next/headers';
 import {createClient} from '@/lib/supabase/server';
 import {SiteHeader} from '@/components/site-header';
 import {SiteFooter} from '@/components/site-footer';
+import {InteractiveEffects} from '@/components/interactive-effects';
 const siteUrl='https://liberamente.site';
 export const metadata:Metadata={metadataBase:new URL(siteUrl),title:{default:'LIBERAMENTE.site | Independent ebook store',template:'%s | LIBERAMENTE.site'},description:'Independent ebooks for Italian and English readers. LIBERAMENTE.site is the Scrittore.site store.',applicationName:'LIBERAMENTE.site',keywords:['ebook italiani','independent ebooks','ebook indipendenti','English ebooks','digital books','autori indipendenti','independent authors','pubblicare ebook','Scrittore.site'],authors:[{name:'LIBERAMENTE.site'}],creator:'LIBERAMENTE.site',publisher:'LIBERAMENTE.site',icons:{icon:[{url:'/favicon.png',type:'image/png'}],apple:'/favicon.png'},openGraph:{type:'website',locale:'it_IT',alternateLocale:['en_US'],url:siteUrl,siteName:'LIBERAMENTE.site',title:'LIBERAMENTE.site – the Scrittore.site store',description:'Independent ebooks to discover, buy and read.',images:[{url:'/liberamente-logo.png',alt:'Logo LIBERAMENTE.site'}]},twitter:{card:'summary_large_image',title:'LIBERAMENTE.site – the Scrittore.site store',description:'Independent ebooks for readers and authors.',images:['/liberamente-logo.png']},robots:{index:true,follow:true,googleBot:{index:true,follow:true,'max-image-preview':'large','max-snippet':-1,'max-video-preview':-1}}};
 export default async function Layout({children}:{children:React.ReactNode}) {
@@ -46,5 +49,6 @@ export default async function Layout({children}:{children:React.ReactNode}) {
     <SiteHeader signedIn={Boolean(user)} isPrimaryAdmin={isPrimaryAdmin} hasAuthorArea={hasAuthorArea}/>
     {children}
     <SiteFooter/>
+    <InteractiveEffects/>
   </body></html>;
 }
