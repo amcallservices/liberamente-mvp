@@ -1,0 +1,164 @@
+/* ============================================================
+   Tema "Tramonto mediterraneo": crema caldo, blu notte, corallo,
+   giallo sole e verde mare. Caricato per ultimo: cambia i colori
+   di tutto il sito e aggiunge gli effetti al passaggio del mouse.
+   ============================================================ */
+
+:root {
+  --sun-paper: #fff8ef;
+  --sun-surface: #fffdf9;
+  --sun-peach: #fde8d7;
+  --sun-tone: #f8ecdf;
+  --sun-ink: #142533;
+  --sun-coral: #ff5a36;
+  --sun-coral-dark: #e8461f;
+  --sun-yellow: #ffc94d;
+  --sun-sea: #1f6f5c;
+  --sun-sea-dark: #17594a;
+  --sun-muted: #5b6670;
+  --sun-ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* Variabili storiche del sito, rimappate sulla nuova palette */
+  --paper: var(--sun-paper);
+  --card: var(--sun-surface);
+  --sand: var(--sun-peach);
+  --sage: #e3f1ec;
+  --moss: var(--sun-sea);
+  --moss-dark: var(--sun-sea-dark);
+  --gold: #c9871a;
+  --gold-soft: #fff1d1;
+  --line: #ead9c6;
+  --ink: var(--sun-ink);
+  --muted: var(--sun-muted);
+  --editorial-paper: var(--sun-paper);
+  --editorial-surface: var(--sun-surface);
+  --editorial-ink: var(--sun-ink);
+  --editorial-forest: var(--sun-sea);
+  --editorial-forest-dark: var(--sun-sea-dark);
+  --editorial-orange: var(--sun-coral);
+  --editorial-gold: var(--sun-yellow);
+  --editorial-muted: var(--sun-muted);
+  --editorial-line: #ead9c6;
+  --editorial-soft: var(--sun-tone);
+}
+
+/* Pagine con lo stile nuovo (home, catalogo, blog, footer, scheda libro) */
+.lm-home, .lm-footer, .lm-cat, .lm-blog, .lm-bp {
+  --lm-ink: var(--sun-ink);
+  --lm-paper: var(--sun-paper);
+  --lm-sand: var(--sun-peach);
+  --lm-tone: var(--sun-tone);
+  --lm-gold: var(--sun-coral);
+  --lm-green: var(--sun-sea);
+  --lm-muted: var(--sun-muted);
+}
+body { background: var(--sun-paper); }
+::selection { background: var(--sun-yellow); color: var(--sun-ink); }
+
+/* ---------- Pulsanti ---------- */
+.button, button, .lm-btn {
+  transition: transform .18s var(--sun-ease), background-color .18s ease, color .18s ease, box-shadow .25s ease;
+}
+.button:hover, button:hover, .lm-btn:hover { transform: translateY(-2px); }
+.button:active, button:active, .lm-btn:active { transform: translateY(0) scale(.97); }
+/* Il pulsante principale è corallo, con testo blu notte (contrasto AA) */
+.lm-btn--gold, .lm-home .lm-btn--gold, .purchase-panel button, .lm-buy-btn {
+  background: var(--sun-coral) !important; color: var(--sun-ink) !important; font-weight: 700;
+}
+.lm-btn--gold:hover, .purchase-panel button:hover, .lm-buy-btn:hover {
+  background: var(--sun-yellow) !important;
+  box-shadow: 0 10px 24px -10px rgba(255, 90, 54, .55);
+}
+.lm-btn--ink:hover { background: var(--sun-coral) !important; color: var(--sun-ink) !important; }
+.lm-btn--sand:hover { background: var(--sun-yellow) !important; }
+.button:not(.alt):hover, button:not(.lm-tabs button):not(.lm-thumb):not(.lm-toggle):not(.lm-filtertoggle):not(.lm-genretoggle):hover { box-shadow: 0 10px 22px -12px rgba(20, 37, 51, .45); }
+
+/* ---------- Menu ---------- */
+.site-header nav a:not(.write-book-link) { position: relative; transition: color .2s ease; }
+.site-header nav a:not(.write-book-link)::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 2px;
+  background: var(--sun-coral); transform: scaleX(0); transform-origin: left; transition: transform .25s var(--sun-ease);
+}
+.site-header nav a:not(.write-book-link):hover { color: var(--sun-coral-dark) !important; }
+.site-header nav a:not(.write-book-link):hover::after { transform: scaleX(1); }
+.site-header .write-book-link { border-color: var(--sun-coral) !important; color: var(--sun-ink) !important; transition: background-color .2s ease, transform .2s var(--sun-ease); }
+.site-header .write-book-link:hover { background: var(--sun-coral) !important; transform: translateY(-2px); }
+
+/* ---------- Link nel testo ---------- */
+.lm-article__body a, .lm-alllink, .lm-blog__more, .lm-card__link, .text-link {
+  text-decoration-color: var(--sun-coral) !important; text-decoration-thickness: 2px !important;
+  transition: color .2s ease, text-underline-offset .2s ease;
+}
+.lm-article__body a:hover, .lm-alllink:hover, .lm-blog__more:hover, .lm-card__link:hover, .text-link:hover { color: var(--sun-coral-dark) !important; text-underline-offset: 6px !important; }
+
+/* ---------- Copertine: si sollevano e si inclinano (vedi InteractiveEffects) ---------- */
+[data-tilt] { transform-style: preserve-3d; will-change: transform; transition: transform .35s var(--sun-ease), box-shadow .35s ease; }
+[data-tilt]:hover { box-shadow: 0 24px 40px -18px rgba(20, 37, 51, .55); }
+.related-title img, .book-card img, .cover-image { transition: transform .35s var(--sun-ease), box-shadow .35s ease; }
+.related-title:hover img, .book-card:hover img { transform: translateY(-8px) rotate(-1.5deg); box-shadow: 0 20px 34px -16px rgba(20, 37, 51, .5); }
+
+/* ---------- Schede e card ---------- */
+.lm-blog__card, .review-card, .lm-card { transition: transform .3s var(--sun-ease), border-color .3s ease; }
+.lm-blog__card:hover { border-top-color: var(--sun-coral); transform: translateY(-4px); }
+.lm-card:hover h2 a, .lm-blog__card:hover h2 a, .lm-blog__card:hover h3 a { color: var(--sun-coral-dark); }
+.lm-card__cover { transition: background-color .3s ease; }
+.lm-card:hover .lm-card__cover { background: var(--sun-yellow); }
+.review-card:hover { transform: translateY(-3px); }
+
+/* ---------- Home ---------- */
+.lm-home .lm-hero h1 span + span { color: var(--sun-coral); }
+.lm-home .lm-stagepanel { background: var(--sun-peach); }
+.lm-home .lm-ledge { background: #f1c9a8; }
+.lm-home .lm-tabs { background: var(--sun-tone); }
+.lm-home .lm-tabs button:hover:not(.is-active) { background: var(--sun-yellow); }
+.lm-home .lm-tabs button.is-active { background: var(--sun-ink); color: var(--sun-paper); }
+.lm-home .lm-badge { display: inline-block; align-self: flex-start; background: var(--sun-yellow); color: var(--sun-ink); padding: 4px 10px; font-weight: 600; }
+.lm-home .lm-plus { background: var(--sun-ink); }
+.lm-home .lm-calc { background: #1d3447; }
+.lm-home .lm-calc__fig--gold, .lm-home .lm-calc__n { color: var(--sun-yellow); }
+.lm-home .lm-big { color: var(--sun-coral); }
+.lm-home .lm-calc input { accent-color: var(--sun-coral); }
+
+/* ---------- Catalogo ---------- */
+.lm-cat .lm-cat__count strong { color: var(--sun-coral); }
+.lm-cat .lm-cat__genres a { transition: background-color .2s ease, padding .2s ease, color .2s ease; }
+.lm-cat .lm-cat__genres a:hover { background: var(--sun-peach); }
+.lm-cat .lm-cat__genres a.is-active { background: var(--sun-ink); color: var(--sun-paper); }
+.lm-cat .lm-cat__genres a.is-active em { color: var(--sun-yellow); }
+.lm-cat .lm-cat__filters { background: var(--sun-peach); }
+.lm-cat .lm-card__price { color: var(--sun-ink); background: var(--sun-yellow); padding: 0 8px; }
+
+/* ---------- Blog ---------- */
+.lm-blog .lm-blog__lead { background: var(--sun-ink); }
+.lm-blog .lm-blog__lead .lm-btn--ink { background: var(--sun-coral) !important; color: var(--sun-ink) !important; }
+.lm-blog .lm-blog__filters a:hover { background: var(--sun-yellow); }
+.lm-blog .lm-article__cta { background: var(--sun-ink); }
+.lm-blog .lm-note { background: var(--sun-peach); }
+
+/* ---------- Footer ---------- */
+.lm-footer { background: var(--sun-peach); }
+.lm-footer .lm-footer__nav a { position: relative; }
+.lm-footer .lm-footer__nav a:hover { color: var(--sun-coral-dark); }
+
+/* ---------- Pagine con lo stile precedente (Plus, FAQ, aree, accesso) ---------- */
+.plus-hero { background: var(--sun-ink) !important; color: var(--sun-paper) !important; }
+.plus-hero h1, .plus-hero .plus-lead, .plus-hero .eyebrow, .plus-hero .plus-price span { color: var(--sun-paper) !important; }
+.plus-hero .plus-price strong { color: var(--sun-yellow) !important; }
+.plus-hero .button:not(.alt) { background: var(--sun-coral) !important; color: var(--sun-ink) !important; }
+.plus-grid article { transition: transform .3s var(--sun-ease), background-color .3s ease; }
+.plus-grid article:hover { transform: translateY(-4px); background: var(--sun-peach); }
+.plus-grid article span { color: var(--sun-coral) !important; }
+.card { transition: transform .3s var(--sun-ease), box-shadow .3s ease; }
+.notice { background: #fff1d1; border-color: #f5d48a; }
+input:focus, textarea:focus, select:focus { outline: 3px solid rgba(255, 90, 54, .25); border-color: var(--sun-coral); }
+.eyebrow { color: var(--sun-coral-dark) !important; }
+
+/* ---------- Comparsa mentre si scorre (vedi InteractiveEffects) ---------- */
+.fx-ready [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity .7s var(--sun-ease), transform .7s var(--sun-ease); }
+.fx-ready [data-reveal].is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .fx-ready [data-reveal] { opacity: 1; transform: none; }
+  [data-tilt] { transform: none !important; }
+}
