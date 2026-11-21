@@ -5,7 +5,6 @@ import {admin} from '@/lib/supabase/admin';
 import {eur} from '@/lib/money';
 import {coverUrl} from '@/lib/covers';
 import {ShareBook} from '../share-book';
-import {BookDescription} from '../book-description';
 import {ReadingExperience} from '@/app/lettore/reading-experience';
 import {getPdfPageCount} from '@/lib/reading-extraction';
 import {ensurePreviewPdfUrl} from '@/lib/preview-pdf';
@@ -95,7 +94,7 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
             {book.plus_enabled&&<p className="lm-bp__plus"><span>Plus</span>{english?<>Included in <Link href={local('/plus')}>LIBERAMENTE Plus</Link>: read it with your subscription.</>:<>Incluso in <Link href={local('/plus')}>LIBERAMENTE Plus</Link>: leggilo con l’abbonamento.</>}</p>}
           </div>
           <div className="lm-bp__actions">{preview?.preview_enabled&&preview.preview_text&&<a className="lm-bp__link" href="#estratto">{english?'Read an excerpt':'Leggi un estratto'} <span aria-hidden="true">↓</span></a>}<ShareBook title={book.title}/></div>
-          {book.description&&<BookDescription text={book.description} english={english}/>}
+          {book.description&&<div className="lm-bp__desc"><p>{book.description}</p></div>}
         </div>
       </article>
       {preview?.preview_enabled&&preview.preview_text&&<section className="lm-bp__extra reading-preview" id="estratto"><h2>{english?'Read before you buy':'Leggi prima di acquistare'}</h2><ReadingExperience title={book.title} text={preview.preview_text} mode="preview" previewPdfUrl={previewPdf}/></section>}
