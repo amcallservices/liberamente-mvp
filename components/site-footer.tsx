@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {marketplacePath} from '@/lib/marketplace';
+import {tourFor} from '@/components/guided-tour';
 
 export function SiteFooter(){
   const pathname=usePathname()||'/';
@@ -20,6 +21,7 @@ export function SiteFooter(){
           <Link href={local('/autore')}>{english?'Author area':'Area autori'}</Link>
           <Link href={local('/blog')}>Blog</Link>
           <Link href={local('/faq')}>{english?'Frequently asked questions':'Domande frequenti'}</Link>
+          {tourFor(pathname)?<button type="button" className="lm-footer__tour" onClick={()=>window.dispatchEvent(new Event('lm-tour-start'))}>{english?'Guided tour':'Visita guidata'}</button>:<Link href={local('/?tour=1')}>{english?'Guided tour':'Visita guidata'}</Link>}
         </nav>
       </div>
       <p>{english?'A home for independent ebooks. Pay securely by card or PayPal, and every purchase stays in your library.':'Una casa per gli ebook indipendenti. Paghi con carta o PayPal in modo sicuro, e ogni acquisto resta nella tua libreria.'}</p>
