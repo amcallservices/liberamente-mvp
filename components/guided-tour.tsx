@@ -10,7 +10,7 @@ const TOURS:Record<string,Tour>={
   home:{id:'home',autoStart:true,steps:{
     it:[
       {title:'Benvenuto su LIBERAMENTE',body:'Qui trovi ebook di autori italiani indipendenti. In un minuto ti mostriamo come trovare, provare e comprare il tuo prossimo libro.'},
-      {target:'.site-header form',title:'Cerca un libro',body:'Scrivi un titolo, un autore o un tema: la ricerca guarda in tutto il catalogo.'},
+      {target:'.site-header form[role="search"]',title:'Cerca un libro',body:'Scrivi un titolo, un autore o un tema: la ricerca guarda in tutto il catalogo.'},
       {target:'.lm-tabs',title:'Scegli la classifica',body:'Passa tra più venduti, più recensiti, novità e titoli inclusi in Plus.'},
       {target:'.lm-stagepanel',title:'Sfoglia il libro',body:'Muovi il mouse sopra il libro per girarlo. Scorrendo la pagina, o con "Sfoglia il libro", si apre e mostra la quarta di copertina.'},
       {target:'.lm-thumbs',title:'Cambia titolo',body:'Tocca o passa sopra una copertina per vederne i dettagli, il prezzo e il pulsante per scoprirlo.'},
@@ -20,7 +20,7 @@ const TOURS:Record<string,Tour>={
     ],
     en:[
       {title:'Welcome to LIBERAMENTE',body:'Ebooks by independent authors. In one minute we’ll show you how to find, try and buy your next book.'},
-      {target:'.site-header form',title:'Search for a book',body:'Type a title, an author or a topic: the search covers the whole catalogue.'},
+      {target:'.site-header form[role="search"]',title:'Search for a book',body:'Type a title, an author or a topic: the search covers the whole catalogue.'},
       {target:'.lm-tabs',title:'Pick a list',body:'Switch between best sellers, top reviewed, new releases and titles included in Plus.'},
       {target:'.lm-stagepanel',title:'Leaf through the book',body:'Move your mouse over the book to turn it. Scroll down, or tap "Leaf through", and it opens to show the blurb.'},
       {target:'.lm-thumbs',title:'Switch title',body:'Tap or hover a cover to see its details, price and a button to discover it.'},
