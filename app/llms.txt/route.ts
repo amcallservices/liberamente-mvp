@@ -30,7 +30,7 @@ const intro=`# LIBERAMENTE.site
 
 ## Per autori
 
-Gli autori possono proporre un ebook dall'Area autori; ogni pubblicazione passa da una revisione editoriale. Le royalty sulle vendite singole sono del 50% sulle vendite non rimborsate e sono liquidabili dopo 30 giorni.
+Gli autori possono proporre un ebook dall'Area autori; ogni pubblicazione passa da una revisione editoriale. Le royalty sulle vendite singole sono del 50% sulle vendite non rimborsate e maturano il 30 di ogni mese per le vendite dei mesi precedenti.
 `;
 
 function clean(value:unknown,max=180){
