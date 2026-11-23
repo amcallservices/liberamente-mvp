@@ -6,6 +6,7 @@ import {notifyAuthorBookDecision} from '@/lib/notifications';
 import {revalidatePath} from 'next/cache';
 import {evaluateBookWithAi} from '@/lib/book-ai-review';
 import {extractEbookText,getPdfPageCount} from '@/lib/reading-extraction';
+import {payableCutoff,romeMidnightUtc} from '@/lib/royalty-schedule';
 
 async function verifiedAdminContext(){const s=await createClient(),{data:{user}}=await s.auth.getUser();if(!user)redirect('/accedi');const {data:profile}=await s.from('profiles').select('role').eq('id',user.id).maybeSingle();if(profile?.role!=='admin')redirect('/');return {db:admin(),userId:user.id}}
 async function verifiedAdmin(){return (await verifiedAdminContext()).db}
@@ -20,12 +21,10 @@ export async function deleteAPlusBlockAsAdmin(blockId:string){const db=await ver
 export async function markAuthorRoyaltiesPaid(authorId:string,form:FormData){
  const date=String(form.get('paidOutDate')??'');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))redirect('/admin');
- const db=await verifiedAdmin(),paidOutAt=`${date}T12:00:00.000Z`,cutoff=new Date();
- cutoff.setUTCDate(cutoff.getUTCDate()-30);
- const closedPlusPeriod=new Date(Date.UTC(new Date().getUTCFullYear(),new Date().getUTCMonth(),1)).toISOString().slice(0,10);
+ const db=await verifiedAdmin(),paidOutAt=`${date}T12:00:00.000Z`,payable=payableCutoff();
  const [{data:eligible,error:ledgerError},{data:eligiblePlus,error:plusError}]=await Promise.all([
-  db.from('royalty_ledger').select('id').eq('author_id',authorId).is('paid_out_at',null).is('reversed_at',null).lte('created_at',cutoff.toISOString()),
-  db.from('plus_author_allocations').select('id').eq('author_id',authorId).is('paid_out_at',null).lt('period_start',closedPlusPeriod)
+  db.from('royalty_ledger').select('id').eq('author_id',authorId).is('paid_out_at',null).is('reversed_at',null).lt('created_at',romeMidnightUtc(payable)),
+  db.from('plus_author_allocations').select('id').eq('author_id',authorId).is('paid_out_at',null).lt('period_start',payable)
  ]);
  if(ledgerError||plusError)throw new Error('Impossibile verificare le royalty.');
  const ids=(eligible??[]).map(row=>row.id),plusIds=(eligiblePlus??[]).map(row=>row.id);

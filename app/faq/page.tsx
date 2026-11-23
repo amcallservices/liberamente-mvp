@@ -44,7 +44,7 @@ const italianSections:Section[]=[
       {question:'Cosa accade dopo l’invio in revisione?',answer:'L’amministrazione valuta il libro. Può pubblicarlo, richiedere correzioni o bloccarlo. Le note della revisione restano visibili nell’area autore, così puoi intervenire e inviarlo nuovamente.'},
       {question:'Posso modificare o eliminare un mio libro?',answer:'Sì. Dall’Area autori puoi modificare i libri secondo il loro stato editoriale o eliminarli. Ogni modifica a un titolo già pubblicato torna in revisione prima di essere resa pubblica.'},
       {question:'Qual è la royalty sulle vendite singole?',answer:'Per le vendite singole l’autore matura una royalty del 50% del prezzo di vendita, al lordo di eventuali imposte applicabili. Il valore stimato viene mostrato anche durante l’inserimento del prezzo.'},
-      {question:'Quando vengono pagate le royalty?',answer:'Le royalty maturate da almeno 30 giorni e non oggetto di rimborso sono disponibili per la liquidazione. Nel report autore puoi seguire vendite, letture Plus e compensi.'},
+      {question:'Quando vengono pagate le royalty?',answer:'Le royalty maturano il 30 di ogni mese (il 28 a febbraio): in quella data diventano liquidabili le vendite non rimborsate e le letture Plus dei mesi precedenti. Nel report autore puoi seguire vendite, letture Plus e compensi.'},
       {question:'Quali modalità di accredito sono disponibili?',answer:'Puoi indicare Stripe Connect, PayPal o bonifico bancario. Per il bonifico sono richiesti IBAN valido, intestatario, banca e contatto WhatsApp, dati che restano disponibili all’amministrazione per la liquidazione.'}
     ],
     link:{href:'/autore',label:'Apri l’Area autori'}
@@ -81,7 +81,7 @@ const englishSections:Section[]=[
     {question:'What happens after submission?',answer:'The administration reviews your book and can publish it, request corrections or block it. Review notes remain available in your Author area.'},
     {question:'Can I edit or delete my book?',answer:'Yes. In the Author area you can edit books according to their status or delete them. Changes to a published title go back into review before becoming public.'},
     {question:'What is the royalty on individual sales?',answer:'For individual sales, authors receive 50% of the sale price before any applicable taxes.'},
-    {question:'When are royalties paid?',answer:'Royalties that are at least 30 days old and not refunded become available for payout. The Author report shows sales, Plus reading and earnings.'}
+    {question:'When are royalties paid?',answer:'Royalties mature on the 30th of every month (the 28th in February): on that date, non-refunded sales and Plus reading from previous months become available for payout. The Author report shows sales, Plus reading and earnings.'}
   ],link:{href:'/en/autore',label:'Open the Author area'}},
   {id:'security',label:'Security and support',title:'Account, payments and support',description:'Essential answers to use the service safely.',questions:[
     {question:'Are payments secure?',answer:'Yes. LIBERAMENTE.site uses Stripe to process payments. Your card details are not handled directly by the store.'},

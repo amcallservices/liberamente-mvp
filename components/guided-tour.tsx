@@ -15,7 +15,7 @@ const TOURS:Record<string,Tour>={
       {target:'.lm-stagepanel',title:'Sfoglia il libro',body:'Muovi il mouse sopra il libro per girarlo. Scorrendo la pagina, o con "Sfoglia il libro", si apre e mostra la quarta di copertina.'},
       {target:'.lm-thumbs',title:'Cambia titolo',body:'Tocca o passa sopra una copertina per vederne i dettagli, il prezzo e il pulsante per scoprirlo.'},
       {target:'.lm-calc',title:'LIBERAMENTE Plus',body:'Con un solo abbonamento leggi tutti i titoli aderenti. Sposta il cursore per vedere quanto risparmi.'},
-      {target:'.lm-authors__copy',title:'Scrivi anche tu?',body:'Pubblica il tuo ebook: ricevi il 50% su ogni vendita, con pagamenti ogni 30 giorni.'},
+      {target:'.lm-authors__copy',title:'Scrivi anche tu?',body:'Pubblica il tuo ebook: ricevi il 50% su ogni vendita, con pagamenti il 30 di ogni mese.'},
       {target:'.site-header nav a[href$="/catalogo"]',title:'Esplora il catalogo',body:'Da qui vedi tutti gli ebook, con filtri per genere, prezzo e valutazione. Buona lettura!'}
     ],
     en:[
@@ -25,7 +25,7 @@ const TOURS:Record<string,Tour>={
       {target:'.lm-stagepanel',title:'Leaf through the book',body:'Move your mouse over the book to turn it. Scroll down, or tap "Leaf through", and it opens to show the blurb.'},
       {target:'.lm-thumbs',title:'Switch title',body:'Tap or hover a cover to see its details, price and a button to discover it.'},
       {target:'.lm-calc',title:'LIBERAMENTE Plus',body:'One subscription for every included title. Move the slider to see how much you save.'},
-      {target:'.lm-authors__copy',title:'Do you write?',body:'Publish your ebook and earn 50% on every sale, paid every 30 days.'},
+      {target:'.lm-authors__copy',title:'Do you write?',body:'Publish your ebook and earn 50% on every sale, paid on the 30th of every month.'},
       {target:'.site-header nav a[href$="/catalogo"]',title:'Browse the catalogue',body:'See every ebook, with filters by genre, price and rating. Happy reading!'}
     ]
   }},
@@ -70,14 +70,14 @@ const TOURS:Record<string,Tour>={
       {title:'Benvenuto nell’Area autori',body:'Ecco come pubblicare il tuo ebook su LIBERAMENTE, in quattro passaggi.'},
       {target:'.author-grid form.card',title:'1. Crea la scheda',body:'Titolo, sottotitolo, categoria e una descrizione che faccia venire voglia di leggere.'},
       {target:'.titles',title:'2. Carica PDF e copertina',body:'Per ogni titolo carichi il manoscritto in PDF e la copertina, imposti il prezzo e lo invii in revisione.'},
-      {target:'.royalty-card',title:'3. Segui vendite e royalty',body:'Ricevi il 50% su ogni vendita singola; le royalty si liquidano dopo 30 giorni.'},
+      {target:'.royalty-card',title:'3. Segui vendite e royalty',body:'Ricevi il 50% su ogni vendita singola; le royalty maturano il 30 di ogni mese.'},
       {target:'.author-grid section.card',title:'4. Scegli come essere pagato',body:'Stripe Connect, PayPal o bonifico: imposta qui la tua preferenza.'}
     ],
     en:[
       {title:'Welcome to the Author area',body:'Here’s how to publish your ebook on LIBERAMENTE, in four steps.'},
       {target:'.author-grid form.card',title:'1. Create the book page',body:'Title, subtitle, category and a description that makes people want to read.'},
       {target:'.titles',title:'2. Upload PDF and cover',body:'For each title upload the PDF manuscript and the cover, set the price and submit it for review.'},
-      {target:'.royalty-card',title:'3. Track sales and royalties',body:'You earn 50% on every single sale; royalties are paid out after 30 days.'},
+      {target:'.royalty-card',title:'3. Track sales and royalties',body:'You earn 50% on every single sale; royalties mature on the 30th of every month.'},
       {target:'.author-grid section.card',title:'4. Choose how you’re paid',body:'Stripe Connect, PayPal or bank transfer: set your preference here.'}
     ]
   }}
