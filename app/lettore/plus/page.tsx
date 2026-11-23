@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { admin } from '@/lib/supabase/admin';
-import { coverUrl } from '@/lib/covers';
+import { coverUrl, COVER_THUMB, COVER_LARGE } from '@/lib/covers';
 import { isPlusActive } from '@/lib/plus';
 import { createClient } from '@/lib/supabase/server';
 import { PdfPageReader } from './pdf-page-reader';
@@ -35,7 +35,7 @@ export default async function PlusLibrary({ searchParams }: { searchParams: Prom
     <p className="muted">{english?'Active subscription. Your next renewal date is ':'Abbonamento attivo. La prossima scadenza è '}{subscription?.current_period_end ? new Intl.DateTimeFormat(english?'en-US':'it-IT', { dateStyle: 'long' }).format(new Date(subscription.current_period_end)) : (english?'being updated':'in aggiornamento')}.</p>
     <p className="notice">{english?'For a fair Plus fund distribution, confirm every page after reading it. You will always resume from the first unconfirmed page. Each page is confirmed only once per title and reader; its first confirmation remains credited to the author report for that month. Downloading and printing are unavailable.':'Per una ripartizione corretta del fondo Plus, conferma ogni pagina dopo averla letta. Riprenderai sempre dalla prima pagina non confermata. Ogni pagina viene confermata una sola volta per titolo e lettore; la prima conferma resta attribuita al report dell’autore nel relativo mese. Download e stampa non sono disponibili.'}</p>
     {selectedBook ? (() => {
-      const cover = coverUrl(selectedBook.cover_path);
+      const cover = coverUrl(selectedBook.cover_path,COVER_LARGE);
       const hasProtectedPdf = Boolean(selectedBook.file_path && selectedBook.file_mime_type === 'application/pdf');
       return <article className="plus-reading-book plus-reading-book--active">
         <div className="plus-reader-heading"><Link className="button alt" href={selectedCategory ? local(`/lettore/plus?categoria=${encodeURIComponent(selectedCategory)}`) : local('/lettore/plus')}>← {english?'Choose another book':'Cambia libro'}</Link><Link className="text-link" href={local(`/ebook/${selectedBook.slug}`)}>{english?'View book page':'Vedi la scheda del libro'}</Link></div>
@@ -46,7 +46,7 @@ export default async function PlusLibrary({ searchParams }: { searchParams: Prom
       <div className="plus-title-picker__heading"><div><h2>{english?'Choose a book to read':'Scegli un libro da leggere'}</h2><p>{english?'Open one title at a time: you can always return here and continue another ebook.':'Apri un solo titolo alla volta: potrai sempre tornare qui e continuare un altro ebook.'}</p></div><span>{books?.length ?? 0} {english?'titles available':'titoli disponibili'}</span></div>
       {categories.length > 0 && <nav className="plus-category-filter" aria-label={english?'Filter Plus titles by category':'Filtra i titoli Plus per categoria'}><span>{english?'Browse by category':'Esplora per categoria'}</span><div><Link className={`plus-category-filter__link${!selectedCategory ? ' is-active' : ''}`} href={local('/lettore/plus')}>{english?'All':'Tutti'}</Link>{categories.map((category) => <Link key={category} className={`plus-category-filter__link${selectedCategory === category ? ' is-active' : ''}`} href={local(`/lettore/plus?categoria=${encodeURIComponent(category)}`)}>{categoryLabel(category,locale)}</Link>)}</div></nav>}
       <div className="plus-title-picker__grid">{visibleBooks.map((book: any) => {
-        const cover = coverUrl(book.cover_path);
+        const cover = coverUrl(book.cover_path,COVER_THUMB);
         const pagesRead = readsByBook.get(book.id)?.length ?? 0;
         const totalPages = Math.max(1, Number(book.page_count) || 1);
         return <article className="plus-title-card" key={book.id}>

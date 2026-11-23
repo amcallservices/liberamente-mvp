@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type {Metadata} from 'next';
 import {rankBooksForQuery} from '@/lib/book-search';
-import {coverUrl} from '@/lib/covers';
+import {coverUrl,COVER_THUMB,COVER_LARGE} from '@/lib/covers';
 import {BOOK_CATEGORIES,categoryLabel} from '@/lib/categories';
 import {eur} from '@/lib/money';
 import {admin} from '@/lib/supabase/admin';
@@ -92,7 +92,7 @@ export default async function Catalog({searchParams}:{searchParams:Promise<{cate
           {!availableCategories.length&&<p className="lm-cat__note">{t.newGenres}</p>}
         </nav>
         <section aria-label={t.published}>
-          {books.length>0&&<div className="lm-cat__grid">{books.map((book:any)=>{const image=coverUrl(book.cover_path),stat=stats.get(book.id),reviews=Number(stat?.review_count??0),rating=Number(stat?.average_rating??0);const profile=Array.isArray(book.profiles)?book.profiles[0]:book.profiles;const href=local(`/ebook/${book.slug}`);const rank=rankLabel(bsr.get(book.id));return <article className="lm-card" key={book.id}>
+          {books.length>0&&<div className="lm-cat__grid">{books.map((book:any)=>{const image=coverUrl(book.cover_path,COVER_THUMB),stat=stats.get(book.id),reviews=Number(stat?.review_count??0),rating=Number(stat?.average_rating??0);const profile=Array.isArray(book.profiles)?book.profiles[0]:book.profiles;const href=local(`/ebook/${book.slug}`);const rank=rankLabel(bsr.get(book.id));return <article className="lm-card" key={book.id}>
             <Link className="lm-card__cover" href={href} tabIndex={-1} aria-hidden="true">{image?<img src={image} alt="" loading="lazy"/>:<span>{english?'Cover coming soon':'Copertina in arrivo'}</span>}</Link>
             <p className="lm-card__meta"><span>{categoryLabel(book.category,locale)||t.book}</span>{book.plus_enabled&&<span> · {t.plusIncluded}</span>}{rank&&<span className="lm-card__rank"> · {rank}</span>}</p>
             <h2><Link href={href}>{book.title}</Link></h2>

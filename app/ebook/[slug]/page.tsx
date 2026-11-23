@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type {Metadata} from 'next';
 import {admin} from '@/lib/supabase/admin';
 import {eur} from '@/lib/money';
-import {coverUrl} from '@/lib/covers';
+import {coverUrl,COVER_THUMB,COVER_LARGE} from '@/lib/covers';
 import {ShareBook} from '../share-book';
 import {ReadingExperience} from '@/app/lettore/reading-experience';
 import {getPdfPageCount} from '@/lib/reading-extraction';
@@ -49,7 +49,7 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
   const blocks=aPlusBlocks??[],paths=blocks.flatMap((block:any)=>block.image_paths??[]);
   const {data:signed}=paths.length?await admin().storage.from('a-plus').createSignedUrls(paths,3600):{data:[]};
   const signedUrls=new Map((signed??[]).map((row:any)=>[row.path,row.signedUrl]));
-  const image=coverUrl(book.cover_path),reviewRows=reviews??[],rating=Number(stat?.average_rating??0),author=Array.isArray((book as any).profiles)?(book as any).profiles[0]:(book as any).profiles,authorName=author?.display_name||'Autore indipendente';
+  const image=coverUrl(book.cover_path,COVER_LARGE),reviewRows=reviews??[],rating=Number(stat?.average_rating??0),author=Array.isArray((book as any).profiles)?(book as any).profiles[0]:(book as any).profiles,authorName=author?.display_name||'Autore indipendente';
   const categories=Array.from(new Set([book.category,...(Array.isArray((book as any).categories)?(book as any).categories:[])].filter(Boolean))) as string[];
   const related=(relatedRows??[]).filter((candidate:any)=>categories.some(category=>candidate.category===category||(Array.isArray(candidate.categories)&&candidate.categories.includes(category)))).slice(0,3);
   const bookSchema=buildBookStructuredData({
@@ -60,7 +60,7 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
     description:book.description,
     authorName,
     categories,
-    image,
+    image:coverUrl(book.cover_path),
     pageCount,
     priceCents:book.price_cents,
     rating,
@@ -75,7 +75,7 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
       <nav className="lm-bp__crumbs" aria-label="Breadcrumb"><Link href={local('/catalogo')}>{english?'Catalogue':'Catalogo'}</Link>{categories[0]&&<> <span aria-hidden="true">/</span> <Link href={local(`/catalogo?categoria=${encodeURIComponent(categories[0])}`)}>{categories[0]}</Link></>}</nav>
       <article className="lm-bp__hero">
         <div className="lm-bp__cover">
-          {image?<img src={image} alt={`${english?'Cover of':'Copertina di'} ${book.title}`}/>:<div className="lm-bp__nocover">{book.title}</div>}
+          {image?<img src={image} alt={`${english?'Cover of':'Copertina di'} ${book.title}`} width={640} height={960} fetchPriority="high" decoding="async"/>:<div className="lm-bp__nocover">{book.title}</div>}
         </div>
         <div className="lm-bp__info">
           <p className="lm-bp__cats">{categories.join(' · ')||'Ebook'}</p>
@@ -98,9 +98,9 @@ export default async function BookPage({params,searchParams}:{params:Promise<{sl
         </div>
       </article>
       {preview?.preview_enabled&&preview.preview_text&&<section className="lm-bp__extra reading-preview" id="estratto"><h2>{english?'Read before you buy':'Leggi prima di acquistare'}</h2><ReadingExperience title={book.title} text={preview.preview_text} mode="preview" previewPdfUrl={previewPdf}/></section>}
-      {blocks.length>0&&<section className="lm-bp__extra a-plus-public"><h2>{english?'Discover more':'Scopri di più'}</h2>{blocks.map((block:any)=><article className="a-plus-block" key={block.id}><div className={`a-plus-images images-${block.image_paths.length}`}>{block.image_paths.map((path:string,index:number)=>{const url=signedUrls.get(path),title=block.image_titles?.[index]||`${english?'Image':'Immagine'} ${index+1}`;return url?<figure key={path}><img src={url} alt={`${block.image_alt} — ${title}`}/><figcaption>{title}</figcaption></figure>:null})}</div></article>)}</section>}
+      {blocks.length>0&&<section className="lm-bp__extra a-plus-public"><h2>{english?'Discover more':'Scopri di più'}</h2>{blocks.map((block:any)=><article className="a-plus-block" key={block.id}><div className={`a-plus-images images-${block.image_paths.length}`}>{block.image_paths.map((path:string,index:number)=>{const url=signedUrls.get(path),title=block.image_titles?.[index]||`${english?'Image':'Immagine'} ${index+1}`;return url?<figure key={path}><img loading="lazy" src={url} alt={`${block.image_alt} — ${title}`}/><figcaption>{title}</figcaption></figure>:null})}</div></article>)}</section>}
       <section className="lm-bp__extra lm-bp__reviews"><h2>{english?'What readers think':'Cosa ne pensano i lettori'}</h2><p className="lm-bp__note">{english?'Only readers who bought the book can review it.':'Possono recensire solo i lettori che hanno acquistato il libro.'}</p>{reviewRows.length?<div className="lm-bp__reviewlist">{reviewRows.map((review:any)=>{const profile=Array.isArray(review.profiles)?review.profiles[0]:review.profiles;return <article className="review-card" key={review.id}><p className="lm-bp__stars" aria-label={`${review.rating} / 5`}>{'★'.repeat(review.rating)}<span>{'★'.repeat(5-review.rating)}</span></p><p>{review.body}</p><small>{profile?.display_name||(english?'Verified reader':'Lettore verificato')} · {new Intl.DateTimeFormat(english?'en-GB':'it-IT',{dateStyle:'medium'}).format(new Date(review.created_at))}</small></article>})}</div>:<p className="lm-bp__empty">{english?'No reviews yet: be the first, after your purchase.':'Ancora nessuna recensione: dopo l’acquisto puoi essere il primo.'}</p>}</section>
-      {related.length>0&&<section className="lm-bp__extra lm-bp__related"><div className="lm-bp__relhead"><h2>{english?'More stories to discover':'Altre storie da scoprire'}</h2><Link className="lm-bp__link" href={local('/catalogo')}>{english?'View catalogue':'Vai al catalogo'} <span aria-hidden="true">→</span></Link></div><div className="lm-bp__relgrid">{related.map((candidate:any)=>{const candidateProfile=Array.isArray(candidate.profiles)?candidate.profiles[0]:candidate.profiles;const candidateImage=coverUrl(candidate.cover_path);return <Link className="related-title" href={local(`/ebook/${candidate.slug}`)} key={candidate.id}>{candidateImage?<img src={candidateImage} alt={`${english?'Cover of':'Copertina di'} ${candidate.title}`}/>:<span className="lm-bp__nocover">{candidate.title}</span>}<strong>{candidate.title}</strong><small>{english?'by':'di'} {candidateProfile?.display_name||(english?'Independent author':'Autore indipendente')}</small></Link>})}</div></section>}
+      {related.length>0&&<section className="lm-bp__extra lm-bp__related"><div className="lm-bp__relhead"><h2>{english?'More stories to discover':'Altre storie da scoprire'}</h2><Link className="lm-bp__link" href={local('/catalogo')}>{english?'View catalogue':'Vai al catalogo'} <span aria-hidden="true">→</span></Link></div><div className="lm-bp__relgrid">{related.map((candidate:any)=>{const candidateProfile=Array.isArray(candidate.profiles)?candidate.profiles[0]:candidate.profiles;const candidateImage=coverUrl(candidate.cover_path,COVER_THUMB);return <Link className="related-title" href={local(`/ebook/${candidate.slug}`)} key={candidate.id}>{candidateImage?<img loading="lazy" src={candidateImage} alt={`${english?'Cover of':'Copertina di'} ${candidate.title}`}/>:<span className="lm-bp__nocover">{candidate.title}</span>}<strong>{candidate.title}</strong><small>{english?'by':'di'} {candidateProfile?.display_name||(english?'Independent author':'Autore indipendente')}</small></Link>})}</div></section>}
     </div>
     <div className="lm-bp__sticky" aria-hidden="false"><span className="lm-bp__stickyprice">{eur(book.price_cents)}</span>{buyForm('lm-bp__stickyform')}</div>
   </main>;
