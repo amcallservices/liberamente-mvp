@@ -23,3 +23,8 @@
 .subscription-reader{display:grid;gap:.16rem}.subscription-reader .subscription-email{color:var(--green);font-weight:750;font-size:.9rem}.subscription-reader small{color:var(--muted);font-size:.78rem}.error-notice{background:#fff1f1;color:#9b1c25;border-color:#f3c7cb}
 .empty{color:var(--muted);margin:1rem 0 0}
 @media(max-width:720px){.plus-admin-head{display:block}.plus-admin-head .button{margin-top:1rem}.plus-admin-metrics{grid-template-columns:1fr}.plus-admin-book{grid-template-columns:44px minmax(0,1fr)}.plus-admin-book img,.plus-admin-cover{width:44px;height:62px}.plus-admin-book form{grid-column:1/-1}.plus-subscription-list>div{display:block}.plus-subscription-list span{display:block;margin-top:.25rem}}
+.plus-subscription-list>div{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.plus-subscription-list .subscription-period{display:grid;justify-items:end;text-align:right;gap:2px}
+.plus-subscription-list .subscription-period strong{color:var(--ink,#142533);font-size:.95rem}
+.plus-subscription-list .subscription-period small{font-size:.82rem}
+@media(max-width:640px){.plus-subscription-list>div{flex-direction:column}.plus-subscription-list .subscription-period{justify-items:start;text-align:left}}
