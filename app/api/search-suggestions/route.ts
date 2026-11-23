@@ -1,6 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {rankBooksForQuery} from '@/lib/book-search';
-import {coverUrl} from '@/lib/covers';
+import {coverUrl,COVER_THUMB,COVER_LARGE} from '@/lib/covers';
 import {admin} from '@/lib/supabase/admin';
 import {marketplaceLocale} from '@/lib/marketplace';
 
@@ -24,7 +24,7 @@ export async function GET(request:NextRequest){
       slug:book.slug,
       author:profile?.display_name??(locale==='en'?'Author':'Autore'),
       category:book.category??(locale==='en'?'Ebook':'Ebook'),
-      coverUrl:coverUrl(book.cover_path),
+      coverUrl:coverUrl(book.cover_path,COVER_THUMB),
     };
   });
   return NextResponse.json({suggestions});
